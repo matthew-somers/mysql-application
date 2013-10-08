@@ -25,15 +25,9 @@ create table Review
 (review_id int PRIMARY KEY,
 reviewer_id int REFERENCES User(id),
 restaurant_id int,
-type varchar(30)
-	#ADD CONSTRAINT ValidDishType
-	#CHECK type IN('appetizer', 'entree', 'dessert', 'beverage')
-,
+type varchar(30),
 dish varchar(100) REFERENCES Serves(food),
-rating int
-	#CONSTRAINT ValidRating
-	#CHECK (rating >= 1 AND rating <= 5)
-,
+rating int,
 created DATE);
 
 

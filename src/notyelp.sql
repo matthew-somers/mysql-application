@@ -30,6 +30,10 @@ dish varchar(100) REFERENCES Serves(food),
 rating int,
 created DATE);
 
+create table Wishlist
+(id int REFERENCES User(id),
+restaurant_id int,
+dish varchar(100) REFERENCES Serves(food));
 
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');

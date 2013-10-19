@@ -35,6 +35,23 @@ create table Wishlist
 restaurant_id int,
 dish varchar(100) REFERENCES Serves(food));
 
+
+### TRIGGERS
+
+# Removes item from wishlist after reviewing
+DROP TRIGGER IF EXISTS RemoveReviewedWishlist;
+DELIMITER | #change delimeter so BEGIN...END clause doesn't end after first ';'
+CREATE TRIGGER RemoveReviewedWishlist
+AFTER INSERT ON Review
+FOR EACH ROW
+BEGIN
+	DELETE FROM Wishlist
+	WHERE NEW.review_id = id AND NEW.restaurant_id = restaurant_id AND NEW.dish = dish;
+END|
+DELIMITER ; #reset delimiter
+
+
+
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');
 insert into Restaurant values(3, 'Carl\'s Jr', 'fast food', '15 S 1st St', 'San Jose');

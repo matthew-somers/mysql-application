@@ -46,7 +46,7 @@ AFTER INSERT ON Review
 FOR EACH ROW
 BEGIN
 	DELETE FROM Wishlist
-	WHERE NEW.review_id = id AND NEW.restaurant_id = restaurant_id AND NEW.dish = dish;
+	WHERE NEW.reviewer_id = id AND NEW.restaurant_id = restaurant_id AND NEW.dish = dish;
 END|
 DELIMITER ; #reset delimiter
 

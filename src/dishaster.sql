@@ -25,15 +25,14 @@ create table Review
 (review_id int PRIMARY KEY,
 reviewer_id int REFERENCES User(id),
 restaurant_id int,
-type varchar(30),
-dish varchar(100) REFERENCES Serves(food),
+food varchar(100) REFERENCES Serves(food),
 rating int,
 created DATE);
 
 create table Wishlist
 (id int REFERENCES User(id),
 restaurant_id int,
-dish varchar(100) REFERENCES Serves(food));
+food varchar(100) REFERENCES Serves(food));
 
 
 ### TRIGGERS
@@ -55,10 +54,22 @@ DELIMITER ; #reset delimiter
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');
 insert into Restaurant values(3, 'Carl\'s Jr', 'fast food', '15 S 1st St', 'San Jose');
+insert into Restaurant values(4, 'In \'n Out', 'fast food', '550 Newhall Dr', 'San Jose');
+insert into Restaurant values(5, 'In \'n Out', 'fast food', '5611 Santa Teresa Blvd', 'San Jose');
 
 insert into Serves values(2, 'donuts', 4.99);
 insert into Serves values(1, 'hamburger', 2.99);
 insert into Serves values(1, 'cheeseburger', 3.99);
 insert into Serves values(3, 'hamburger', 4.99);
+insert into Serves values(4, 'hamburger', 2.99);
+insert into Serves values(4, 'cheeseburger', 3.99);
+insert into Serves values(5, 'hamburger', 2.99);
+insert into Serves values(5, 'cheeseburger', 3.99);
 
 insert into User values(1, 'Matthew', 'fast food', 'admin');
+insert into User values(2, 'Jeffrey', 'dessert', 'admin');
+insert into User values(3, 'Foo', 'fast food', 'user');
+
+insert into Review values(1, 3, 2, 'donuts', 4, '2013-10-21');
+
+insert into Wishlist values(2, 2, 'pizza');

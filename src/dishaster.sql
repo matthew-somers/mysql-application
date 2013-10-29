@@ -79,6 +79,21 @@ BEGIN
 END|
 DELIMITER ;
 
+
+### Stored Procedures
+
+# Look up which stores sells a specific food
+DELIMITER //
+CREATE PROCEDURE foodLookUp
+(IN foodToLook VARCHAR(50), OUT storeName VARCHAR(50))
+BEGIN
+SELECT name INTO storeName
+FROM Restaurant join Serves using(restaurant_id)
+WHERE food = foodToLook;
+END //
+DELIMITER ;
+
+
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');
 insert into Restaurant values(3, 'Carl\'s Jr', 'fast food', '15 S 1st St', 'San Jose');

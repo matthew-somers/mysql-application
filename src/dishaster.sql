@@ -39,17 +39,45 @@ food varchar(100) REFERENCES Serves(food));
 
 # Removes item from wishlist after reviewing
 DROP TRIGGER IF EXISTS RemoveReviewedWishlist;
-DELIMITER | #change delimeter so BEGIN...END clause doesn't end after first ';'
+DELIMITER |
 CREATE TRIGGER RemoveReviewedWishlist
 AFTER INSERT ON Review
 FOR EACH ROW
 BEGIN
 	DELETE FROM Wishlist
-	WHERE NEW.reviewer_id = id AND NEW.restaurant_id = restaurant_id AND NEW.dish = dish;
+	WHERE NEW.reviewer_id = id
+	  AND NEW.restaurant_id = restaurant_id
+	  AND NEW.dish = dish;
 END|
-DELIMITER ; #reset delimiter
+DELIMITER ;
 
-
+# Checks if review to be added has valid values
+DROP TRIGGER IF EXISTS ValidReview;
+DELIMITER |
+CREATE TRIGGER ValidReview
+BEFORE INSERT ON Review
+FOR EACH ROW
+BEGIN
+	IF NEW.rating > 0
+	AND NEW.rating <= 5
+	AND NEW.restaurant_id EXISTS
+		(SELECT restaurant_id
+		 FROM Restaurant)
+	AND NEW.food EXISTS
+		(SELECT food
+		 FROM Serves
+		 WHERE restaurant_id = NEW.restaurant_id)
+	THEN
+		INSERT INTO Review VALUES
+			(NEW.review_id,
+			 NEW.reviewer_id,
+			 NEW.restaurant_id,
+			 NEW.food,
+			 NEW.rating,
+			 NEW.created);
+	END IF;
+END|
+DELIMITER ;
 
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');

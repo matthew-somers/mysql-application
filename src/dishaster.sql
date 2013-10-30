@@ -93,6 +93,19 @@ WHERE food = foodToLook;
 END //
 DELIMITER ;
 
+# Find which stores sell a specific food the cheapest
+DELIMITER //
+CREATE PROCEDURE cheapFoodLookUp
+(IN foodToLook VARCHAR(50), OUT storeName VARCHAR(50))
+BEGIN
+SELECT name INTO storeName
+FROM Restaurant join Serves using(restaurant_id)
+WHERE food = foodToLook
+AND price IN (SELECT min(price)
+FROM serves
+WHERE food = foodToLook);
+END //
+DELIMITER ;
 
 insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
 insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');

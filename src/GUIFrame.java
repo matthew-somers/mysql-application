@@ -1,5 +1,7 @@
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
@@ -7,9 +9,12 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -23,6 +28,7 @@ public class GUIFrame extends JFrame
     
 	public GUIFrame(Connection cn)
 	{
+		int table = 1;
 		connection = cn;
         setTitle("Dishaster!");
         setLayout(new FlowLayout());
@@ -34,9 +40,15 @@ public class GUIFrame extends JFrame
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
-        final GUIModel model = new GUIModel();
-        final JTextField searchbox = new JTextField(30);
+        final JTextField searchbox = new JTextField(20);
         searchbox.setText("name");
+        
+        final JRadioButton restaurant = new JRadioButton("Restaurant");
+        restaurant.setSelected(true);
+        final JRadioButton serves = new JRadioButton("Serves");
+        ButtonGroup bgroup = new ButtonGroup();
+        bgroup.add(restaurant);
+        bgroup.add(serves);
         
         JButton searchbutton = new JButton("Search");
         searchbutton.setPreferredSize(new Dimension(80, 30));
@@ -47,14 +59,17 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		textarea.setText(readDataBase(searchbox.getText()));
+            		if (restaurant.isSelected())
+            			textarea.setText(readDataBase(searchbox.getText(), 1, 1));
+            		else if (serves.isSelected())
+            			textarea.setText(readDataBase(searchbox.getText(), 1, 2));
             	}
             	catch(Exception e) {}
             }
         });
         
-        JButton reviewbutton = new JButton("New Review");
-        reviewbutton.setPreferredSize(new Dimension(110, 30));
+        JButton reviewbutton = new JButton("Insert New Entry");
+        reviewbutton.setPreferredSize(new Dimension(150, 30));
         reviewbutton.addActionListener(new ActionListener() 
         {
             @Override
@@ -62,40 +77,62 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		
+            		textarea.setText(readDataBase(searchbox.getText(), 2, 1));
             	}
             	catch(Exception e) {}
             }
         });
 
-        this.add(searchbox);
-        this.add(model);
+        this.add(restaurant);
+        this.add(serves);
         this.add(searchbutton);
-        this.add(scroll);
         this.add(reviewbutton);
+        this.add(searchbox);
+        this.add(scroll);
+
+
         //setResizable(false);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-    public static String readDataBase(String searchterm) throws Exception 
+    public static String readDataBase(String term, int type, int table) throws Exception 
     {
-      // System.out.println(searchterm);
+       String statement = "";
        String toreturn = "";
+	
        try 
        {
-          String statement = "select " + searchterm + " from Restaurant";
-
-          preparedStatement = connection
-             .prepareStatement(statement);
-
-          resultSet = preparedStatement.executeQuery();
+           if (type == 1) //select
+           {
+        	   statement += "select " + term + " from ";
+        	   if (table == 1)
+        		   statement += "Restaurant";
+        	   else if (table == 2)
+        		   statement += "Serves";
+        	   System.out.println(statement);
+               preparedStatement = connection
+                       .prepareStatement(statement);
+        	   resultSet = preparedStatement.executeQuery();
+           }
+           
+           else if (type == 2) //insert
+           {
+        	   statement += "insert into Restaurant values(" + term + ")";
+        	   System.out.println(statement);
+               preparedStatement = connection
+                       .prepareStatement(statement);
+               preparedStatement.executeUpdate();
+               return "Insertion Successful!";
+               
+           }
        }
           catch (Exception e) 
           {
+        	 System.out.println("Insertions require proper '' around text terms right now.");
              return "Statement failed.";
           }
-          
+       
        ResultSetMetaData rsmd = resultSet.getMetaData();
        int columnNumber = rsmd.getColumnCount();
        

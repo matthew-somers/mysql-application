@@ -47,7 +47,7 @@ BEGIN
 	DELETE FROM Wishlist
 	WHERE NEW.reviewer_id = id
 	  AND NEW.restaurant_id = restaurant_id
-	  AND NEW.dish = dish;
+	  AND NEW.food = food;
 END|
 DELIMITER ;
 
@@ -60,10 +60,10 @@ FOR EACH ROW
 BEGIN
 	IF NEW.rating > 0
 	AND NEW.rating <= 5
-	AND NEW.restaurant_id EXISTS
+	AND NEW.restaurant_id IN
 		(SELECT restaurant_id
 		 FROM Restaurant)
-	AND NEW.food EXISTS
+	AND NEW.food IN
 		(SELECT food
 		 FROM Serves
 		 WHERE restaurant_id = NEW.restaurant_id)
@@ -113,7 +113,7 @@ CREATE PROCEDURE typeLookUp
 (IN typeToLook VARCHAR(50), IN cityToLook VARCHAR(50), OUT storeName VARCHAR(50))
 BEGIN
 SELECT name INTO storeName
-FROM Restaurant 
+FROM Restaurant
 WHERE type = typeToLook AND city = cityToLook;
 END //
 DELIMITER ;

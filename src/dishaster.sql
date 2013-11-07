@@ -3,10 +3,10 @@ create database dishaster;
 use dishaster;
 
 create table Restaurant
-(restaurant_id int PRIMARY KEY,
+(restaurant_id int PRIMARY KEY AUTO_INCREMENT,
 name varchar(30),
 type varchar(30),
-address varchar(100),
+address varchar(100) UNIQUE,
 city varchar(30));
 
 create table Serves
@@ -16,13 +16,13 @@ price double,
 FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id));
 
 create table User
-(id int PRIMARY KEY,
+(id int PRIMARY KEY AUTO_INCREMENT,
 name varchar(30),
 likes varchar(30),
 type varchar(30));
 
 create table Review
-(review_id int PRIMARY KEY,
+(review_id int PRIMARY KEY AUTO_INCREMENT,
 reviewer_id int REFERENCES User(id),
 restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
@@ -58,23 +58,18 @@ CREATE TRIGGER ValidReview
 BEFORE INSERT ON Review
 FOR EACH ROW
 BEGIN
-	IF NEW.rating > 0
-	AND NEW.rating <= 5
-	AND NEW.restaurant_id IN
+	IF NEW.rating <= 0
+	OR NEW.rating > 5
+	OR NEW.restaurant_id NOT IN
 		(SELECT restaurant_id
 		 FROM Restaurant)
-	AND NEW.food IN
+	OR NEW.food NOT IN
 		(SELECT food
 		 FROM Serves
-		 WHERE restaurant_id = NEW.restaurant_id)
+		 WHERE Serves.restaurant_id = NEW.restaurant_id)
 	THEN
-		INSERT INTO Review VALUES
-			(NEW.review_id,
-			 NEW.reviewer_id,
-			 NEW.restaurant_id,
-			 NEW.food,
-			 NEW.rating,
-			 NEW.created);
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'Not valid review';
 	END IF;
 END|
 DELIMITER ;
@@ -117,27 +112,3 @@ FROM Restaurant
 WHERE type = typeToLook AND city = cityToLook;
 END //
 DELIMITER ;
-
-
-insert into Restaurant values(1, 'In \'n Out', 'fast food', '1159 N Rengstorff Ave', 'Mountain View');
-insert into Restaurant values(2, 'Krispy Kreme', 'dessert', '2146 Leghorn St', 'Mountain View');
-insert into Restaurant values(3, 'Carl\'s Jr', 'fast food', '15 S 1st St', 'San Jose');
-insert into Restaurant values(4, 'In \'n Out', 'fast food', '550 Newhall Dr', 'San Jose');
-insert into Restaurant values(5, 'In \'n Out', 'fast food', '5611 Santa Teresa Blvd', 'San Jose');
-
-insert into Serves values(2, 'donuts', 4.99);
-insert into Serves values(1, 'hamburger', 2.99);
-insert into Serves values(1, 'cheeseburger', 3.99);
-insert into Serves values(3, 'hamburger', 4.99);
-insert into Serves values(4, 'hamburger', 2.99);
-insert into Serves values(4, 'cheeseburger', 3.99);
-insert into Serves values(5, 'hamburger', 2.99);
-insert into Serves values(5, 'cheeseburger', 3.99);
-
-insert into User values(1, 'Matthew', 'fast food', 'admin');
-insert into User values(2, 'Jeffrey', 'dessert', 'admin');
-insert into User values(3, 'Foo', 'fast food', 'user');
-
-insert into Review values(1, 3, 2, 'donuts', 4, '2013-10-21');
-
-insert into Wishlist values(2, 2, 'pizza');

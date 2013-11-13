@@ -1,6 +1,11 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+
 import javax.swing.*;
 
 /*
@@ -12,11 +17,12 @@ public class ReviewFrame extends JFrame
     private static PreparedStatement preparedStatement = null;
     
     JLabel label1, label2, label3, label4; 
-    JTextField input1, input2, input3;
-    JComboBox input4;
+    JComboBox input1, input2, input3, input4;
     JButton saveButton, resetButton;
     
-    String[] ratingChoices = { "1 - Alright", "2 - Eh", "3 - Ew", "4 - No", "5 - Dishaster!" };
+    String[] ratingChoices = {"1 - Dishaster!", "2 - Poor", "3 - Meh", "4 - Good", "5 - Great" };
+    String reviewid = "1"; //to be changed to parameter of this
+    String restid = "";
     
 	public ReviewFrame(Connection cn)
 	{
@@ -26,17 +32,70 @@ public class ReviewFrame extends JFrame
         setSize(new Dimension(400, 250));
         
         label1 = new JLabel(" Restaurant:");
-        label2 = new JLabel(" Type:");
+        label2 = new JLabel(" Address:");
         label3 = new JLabel(" Dish:");
         label4 = new JLabel(" Rating:");
         
-        input1 = new JTextField(25);
-        input2 = new JTextField(25);
-        input3 = new JTextField(25);
+	  	ArrayList<String> names = new ArrayList<String>();
+		try {
+			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
+		} catch (Exception e2) {
+			e2.printStackTrace();
+		}
+
+        input1 = new JComboBox(names.toArray());
+        input1.setSelectedItem(null);
+        input2 = new JComboBox();
+        input3 = new JComboBox();
+        input4 = new JComboBox();
+        
+        input1.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		input2.removeAllItems();
+            		input3.removeAllItems();
+
+            		String name = (String)input1.getSelectedItem();
+            		name = name.replace("'", "\\'");
+            		String where = "name = '" + name + "'";
+            		
+            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
+            		for (String address : addresses)
+            			input2.addItem(address);
+            		input2.setSelectedItem(null); 		
+            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
+            		for (String food : foods)
+            			input3.addItem(food);
+            		input3.setSelectedItem(null);
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
+        input2.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		String where = "address = '" + input2.getSelectedItem() + "'";
+            		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
         input4 = new JComboBox(ratingChoices);
+        input4.setSelectedItem(null);
         
         saveButton = new JButton("Add");
         resetButton = new JButton("Reset");
+        
         
         add(label1);
         add(input1);
@@ -54,10 +113,10 @@ public class ReviewFrame extends JFrame
         {
         	public void actionPerformed(ActionEvent ae)
         	{
-        		input1.setText("");
-        		input2.setText("");
-        		input3.setText("");
-        		input4.setSelectedIndex(0);
+        		input1.setSelectedItem(null);
+        		input2.setSelectedItem(null);
+        		input3.setSelectedItem(null);
+        		input4.setSelectedItem(null);
         	}
         });
         
@@ -66,21 +125,21 @@ public class ReviewFrame extends JFrame
         {
         	public void actionPerformed(ActionEvent ae)
         	{
-	        	String value1 = input1.getText();
-	        	String value2 = input2.getText();
-	        	String value3 = input3.getText();
+	        	String value1 = (String) input1.getSelectedItem();
+	        	String value2 = (String) input2.getSelectedItem();
+	        	String value3 = (String) input3.getSelectedItem();
 	        	String value4 = Integer.toString(input4.getSelectedIndex() + 1);
 	        	System.out.println(value1 + value2 + value3 + value4);
 	        	
 	        	try
 	        	{
-	        		preparedStatement = connection.prepareStatement
-		        			("insert into Review(restaurant_id, type, dish, rating) " +
-		        					"values(?, ?, ?, ?)");
-	        		preparedStatement.setString(1,value1);
-	        		preparedStatement.setString(2,value2);
-	        		preparedStatement.setString(3,value3);
-	        		preparedStatement.setString(4,value4);
+	        		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	        		Calendar cal = Calendar.getInstance();
+	        		String statement = "insert into Review(reviewer_id, restaurant_id, food, rating, created) " + 
+	        				"values(" + reviewid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
+	        		System.out.println(statement);
+	        		preparedStatement = connection.prepareStatement(statement);
+
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
 		        	dispose();

@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -59,16 +60,21 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
+            		ArrayList<String> restaurants = new ArrayList<String>();
             		if (restaurant.isSelected())
-            			textarea.setText(readDataBase(searchbox.getText(), 1, 1));
+            			restaurants = readDataBase(searchbox.getText(), 1, 1, "");
             		else if (serves.isSelected())
-            			textarea.setText(readDataBase(searchbox.getText(), 1, 2));
+            			restaurants = readDataBase(searchbox.getText(), 1, 2, "");
+        			String restlist = "";
+        			for (String restaurant : restaurants)
+        				restlist += restaurant + "\n";
+        			textarea.setText(restlist);
             	}
             	catch(Exception e) {}
             }
         });
         
-        JButton reviewbutton = new JButton("Insert New Entry");
+        JButton reviewbutton = new JButton("Insert New Review");
         reviewbutton.setPreferredSize(new Dimension(150, 30));
         reviewbutton.addActionListener(new ActionListener() 
         {
@@ -77,7 +83,7 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		textarea.setText(readDataBase(searchbox.getText(), 2, 1));
+            		ReviewFrame newreview = new ReviewFrame(connection);
             	}
             	catch(Exception e) {}
             }
@@ -96,11 +102,12 @@ public class GUIFrame extends JFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-    public static String readDataBase(String term, int type, int table) throws Exception 
+    public static ArrayList<String> readDataBase(String term, int type, int table, String where) throws Exception 
     {
        String statement = "";
-       String toreturn = "";
-	
+       //String toreturn[] = new String[100];
+       
+       ArrayList<String> toreturn = new ArrayList<String>();
        try 
        {
            if (type == 1) //select
@@ -110,6 +117,10 @@ public class GUIFrame extends JFrame
         		   statement += "Restaurant";
         	   else if (table == 2)
         		   statement += "Serves";
+        	   else if (table == 3)
+        		   statement += "Restaurant join Serves using(restaurant_id)";
+        	   if (!where.equals(""))
+        		   statement += (" where " + where);
         	   System.out.println(statement);
                preparedStatement = connection
                        .prepareStatement(statement);
@@ -123,14 +134,14 @@ public class GUIFrame extends JFrame
                preparedStatement = connection
                        .prepareStatement(statement);
                preparedStatement.executeUpdate();
-               return "Insertion Successful!";
+               return null;
                
            }
        }
           catch (Exception e) 
           {
         	 System.out.println("Insertions require proper '' around text terms right now.");
-             return "Statement failed.";
+             return null;
           }
        
        ResultSetMetaData rsmd = resultSet.getMetaData();
@@ -141,9 +152,8 @@ public class GUIFrame extends JFrame
                for (int k = 1; k <= columnNumber; k++)
                {
                   //moves through columns
-                  toreturn += resultSet.getString(k) + "\t";
+                  toreturn.add(resultSet.getString(k));
                }
-               toreturn += "\n";
           }
 
          return toreturn;

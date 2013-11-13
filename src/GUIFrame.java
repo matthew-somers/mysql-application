@@ -33,7 +33,7 @@ public class GUIFrame extends JFrame
 		connection = cn;
         setTitle("Dishaster!");
         setLayout(new FlowLayout());
-        setSize(new Dimension(500, 300));
+        setSize(new Dimension(600, 300));
         
         final JTextArea textarea = new JTextArea(10, 40);
         textarea.setEditable(false);
@@ -88,11 +88,27 @@ public class GUIFrame extends JFrame
             	catch(Exception e) {}
             }
         });
+        
+        JButton wishlistbutton = new JButton("Add to Wishlist");
+        wishlistbutton.setPreferredSize(new Dimension(150, 30));
+        wishlistbutton.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		WishlistFrame addwishlist = new WishlistFrame(connection);
+            	}
+            	catch(Exception e) {}
+            }
+        });
 
         this.add(restaurant);
         this.add(serves);
         this.add(searchbutton);
         this.add(reviewbutton);
+        this.add(wishlistbutton);
         this.add(searchbox);
         this.add(scroll);
 

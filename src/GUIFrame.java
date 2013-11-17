@@ -29,10 +29,11 @@ public class GUIFrame extends JFrame
 	private static Connection connection;
     private static PreparedStatement preparedStatement = null;
     private static ResultSet resultSet = null;
+    private static int userid;
     
-	public GUIFrame(Connection cn)
+	public GUIFrame(Connection cn, int userid)
 	{
-		int table = 1;
+		this.userid = userid;
 		connection = cn;
         setTitle("Dishaster!");
         setLayout(new BorderLayout());

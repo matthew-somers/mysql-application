@@ -14,7 +14,7 @@ public class Dishaster
    public static void main(String[] args) 
    {  
       Connection cn = Connect();
-      GUIFrame view = new GUIFrame(cn);
+      LoginFrame login = new LoginFrame(cn);
    }
 
    public static Connection Connect()

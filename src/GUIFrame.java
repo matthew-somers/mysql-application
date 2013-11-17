@@ -211,8 +211,25 @@ public class GUIFrame extends JFrame
             }
         });
 
+        // view ranking button
+        JButton rankingbutton = new JButton("View Rankings");
+        rankingbutton.setPreferredSize(new Dimension(150, 30));
+        rankingbutton.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		RankingFrame rankingsFrame = new RankingFrame(connection);
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
         //this.add(searchbutton);
         this.add(reviewbutton, BorderLayout.WEST);
+        this.add(rankingbutton, BorderLayout.CENTER);
         this.add(wishlistbutton, BorderLayout.EAST);
         //this.add(searchbox);
         this.add(scroll, BorderLayout.SOUTH);

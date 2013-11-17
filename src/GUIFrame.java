@@ -1,3 +1,4 @@
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -32,25 +35,129 @@ public class GUIFrame extends JFrame
 		int table = 1;
 		connection = cn;
         setTitle("Dishaster!");
-        setLayout(new FlowLayout());
+        setLayout(new BorderLayout());
         setSize(new Dimension(600, 300));
         
-        final JTextArea textarea = new JTextArea(10, 40);
+        final JTextArea textarea = new JTextArea(10, 30);
         textarea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textarea);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         
-        final JTextField searchbox = new JTextField(20);
-        searchbox.setText("name");
+        //final JTextField searchbox = new JTextField(20);
+        //searchbox.setText("name");
         
-        final JRadioButton restaurant = new JRadioButton("Restaurant");
-        restaurant.setSelected(true);
-        final JRadioButton serves = new JRadioButton("Serves");
-        ButtonGroup bgroup = new ButtonGroup();
-        bgroup.add(restaurant);
-        bgroup.add(serves);
+        String sfirstcriteria[] = {"Select search criteria:", "Restaurant Name", "Specific Food" };
+        final JComboBox firstcriteria = new JComboBox(sfirstcriteria);
+        firstcriteria.setSelectedIndex(0);
+        final JComboBox secondcriteria = new JComboBox();
+        final JComboBox thirdcriteria = new JComboBox();
+        JPanel boxholder = new JPanel();
+        boxholder.add(firstcriteria);
+        boxholder.add(secondcriteria);
+        boxholder.add(thirdcriteria);
         
+        firstcriteria.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		secondcriteria.removeAllItems();
+            		thirdcriteria.removeAllItems();
+            		
+            		if (firstcriteria.getSelectedIndex() == 1)
+            		{
+	            		secondcriteria.addItem("Select name:");
+	            		ArrayList<String> restaurants = new ArrayList<String>();
+	            		restaurants = readDataBase("distinct name", 1, 3, "");
+	            		for (String restaurant : restaurants)	
+	            			secondcriteria.addItem(restaurant);
+            		}
+            		else if (firstcriteria.getSelectedIndex() == 2)
+            		{
+	            		secondcriteria.addItem("Select food:");
+	            		ArrayList<String> foods = new ArrayList<String>();
+	            		foods = readDataBase("distinct food", 1, 3, "");
+	            		for (String food : foods)	
+	            			secondcriteria.addItem(food);
+            		}
+            		
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
+        secondcriteria.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		if (secondcriteria.getSelectedIndex() == 0)
+            			; // do nothing
+            		else if (firstcriteria.getSelectedIndex() == 1)
+            		{
+	        			thirdcriteria.removeAllItems();
+	            		ArrayList<String> list = new ArrayList<String>();
+	            		String name = (String) secondcriteria.getSelectedItem();
+	            		name = name.replace("'", "\\'");
+	            		list = readDataBase("distinct address", 1, 3, "name = '" + name + "'");
+	            		thirdcriteria.addItem("Select address:");
+	            		for (String element : list)
+	            			thirdcriteria.addItem(element);
+            		}
+            		else if (firstcriteria.getSelectedIndex() == 2)
+            		{
+	        			thirdcriteria.removeAllItems();
+	            		ArrayList<String> list = new ArrayList<String>();
+	            		String food = (String) secondcriteria.getSelectedItem();
+	            		//name = name.replace("'", "\\'");
+	            		list = readDataBase("name, address, city, price", 1, 3, "food = '" + food + "'");
+	            		String restlist = "";
+	            		for (String element : list)
+	            		{
+	            			restlist += element + "\t\n";
+	            		}
+	            		textarea.setText(restlist);
+            		}
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
+        thirdcriteria.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		if (firstcriteria.getSelectedIndex() == 2)
+            			; // do nothing
+            		else
+            		{
+	            		ArrayList<String> list = new ArrayList<String>();
+	            		String address = (String) thirdcriteria.getSelectedItem();
+	            		//name = name.replace("'", "\\'");
+	            		list = readDataBase("food, price", 1, 3, "address = '" + address + "'");
+	            		String restlist = "";
+	            		for (String element : list)
+	            		{
+	            			restlist += element + "\t\n";
+	            		}
+	            		textarea.setText(restlist);
+            		}
+            	}
+            	catch(Exception e) {}
+            }
+        });
+        
+        this.add(boxholder, BorderLayout.NORTH);
+        
+        /*
         JButton searchbutton = new JButton("Search");
         searchbutton.setPreferredSize(new Dimension(80, 30));
         searchbutton.addActionListener(new ActionListener() 
@@ -60,19 +167,19 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		ArrayList<String> restaurants = new ArrayList<String>();
-            		if (restaurant.isSelected())
-            			restaurants = readDataBase(searchbox.getText(), 1, 1, "");
-            		else if (serves.isSelected())
-            			restaurants = readDataBase(searchbox.getText(), 1, 2, "");
+            		ArrayList<String> results = new ArrayList<String>();
+            		//results = readDataBase()
         			String restlist = "";
-        			for (String restaurant : restaurants)
-        				restlist += restaurant + "\n";
+        			for (String result : results)
+        			{
+        				restlist += result + "\t\n";
+        			}
         			textarea.setText(restlist);
             	}
             	catch(Exception e) {}
             }
         });
+        */
         
         JButton reviewbutton = new JButton("Insert New Review");
         reviewbutton.setPreferredSize(new Dimension(150, 30));
@@ -104,13 +211,11 @@ public class GUIFrame extends JFrame
             }
         });
 
-        this.add(restaurant);
-        this.add(serves);
-        this.add(searchbutton);
-        this.add(reviewbutton);
-        this.add(wishlistbutton);
-        this.add(searchbox);
-        this.add(scroll);
+        //this.add(searchbutton);
+        this.add(reviewbutton, BorderLayout.WEST);
+        this.add(wishlistbutton, BorderLayout.EAST);
+        //this.add(searchbox);
+        this.add(scroll, BorderLayout.SOUTH);
 
 
         //setResizable(false);
@@ -165,11 +270,16 @@ public class GUIFrame extends JFrame
        
           while (resultSet.next()) //moves through rows, first is blank
           {
+        	  String entry = "";
                for (int k = 1; k <= columnNumber; k++)
                {
                   //moves through columns
-                  toreturn.add(resultSet.getString(k));
+            	   if (k != columnNumber)
+            		   entry += resultSet.getString(k) + "\t";
+            	   else
+            		   entry += resultSet.getString(k);
                }
+               toreturn.add(entry);
           }
 
          return toreturn;

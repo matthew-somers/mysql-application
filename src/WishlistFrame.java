@@ -20,10 +20,9 @@ public class WishlistFrame extends JFrame
     JComboBox input1, input2, input3;
     JButton saveButton, resetButton;
     
-    String userid = "1";  //to be changed
     String restid = "";
     
-	public WishlistFrame(Connection cn)
+	public WishlistFrame(Connection cn, final int userid)
 	{
 		connection = cn;
         setTitle("Dishaster! - Wishlist");

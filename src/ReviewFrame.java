@@ -21,10 +21,9 @@ public class ReviewFrame extends JFrame
     JButton saveButton, resetButton;
     
     String[] ratingChoices = {"1 - Dishaster!", "2 - Poor", "3 - Meh", "4 - Good", "5 - Great" };
-    String reviewid = "1"; //to be changed to parameter of this
     String restid = "";
     
-	public ReviewFrame(Connection cn)
+	public ReviewFrame(Connection cn, final int userid)
 	{
 		connection = cn;
         setTitle("Dishaster! - New Review");
@@ -136,7 +135,7 @@ public class ReviewFrame extends JFrame
 	        		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	        		Calendar cal = Calendar.getInstance();
 	        		String statement = "insert into Review(reviewer_id, restaurant_id, food, rating, created) " + 
-	        				"values(" + reviewid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
+	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
 

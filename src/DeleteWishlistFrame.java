@@ -23,7 +23,7 @@ public class DeleteWishlistFrame extends JFrame
     String userid = "1";  //to be changed
     String restid = "";
     
-	public DeleteWishlistFrame(Connection cn)
+	public DeleteWishlistFrame(Connection cn, final int userid)
 	{
 		connection = cn;
         setTitle("Dishaster! - Remove from Wishlist");

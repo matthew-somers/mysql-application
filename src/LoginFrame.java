@@ -116,6 +116,7 @@ public class LoginFrame extends JFrame
 		
 		setSize(250, 300);
 		add(listpane);
+		this.repaint();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	

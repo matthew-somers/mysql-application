@@ -31,7 +31,7 @@ public class GUIFrame extends JFrame
     private static ResultSet resultSet = null;
     private static int userid;
     
-	public GUIFrame(Connection cn, int userid)
+	public GUIFrame(Connection cn, final int userid)
 	{
 		this.userid = userid;
 		connection = cn;
@@ -191,7 +191,7 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		ReviewFrame newreview = new ReviewFrame(connection);
+            		ReviewFrame newreview = new ReviewFrame(connection, userid);
             	}
             	catch(Exception e) {}
             }
@@ -206,7 +206,7 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		WishlistFrame addwishlist = new WishlistFrame(connection);
+            		WishlistFrame addwishlist = new WishlistFrame(connection, userid);
             	}
             	catch(Exception e) {}
             }
@@ -221,7 +221,7 @@ public class GUIFrame extends JFrame
             {
             	try 
             	{
-            		DeleteWishlistFrame addwishlist = new DeleteWishlistFrame(connection);
+            		DeleteWishlistFrame addwishlist = new DeleteWishlistFrame(connection, userid);
             	}
             	catch(Exception e) {}
             }
@@ -244,11 +244,12 @@ public class GUIFrame extends JFrame
         });
         
         //this.add(searchbutton);
+        JPanel wishlists = new JPanel();
+        wishlists.add(wishlistbutton);
+        wishlists.add(deletewishlistbutton);
+        this.add(wishlists, BorderLayout.EAST);
         this.add(reviewbutton, BorderLayout.WEST);
         this.add(rankingbutton, BorderLayout.CENTER);
-        this.add(wishlistbutton, BorderLayout.EAST);
-        //this.add(deletewishlistbutton, BorderLayout.EAST);
-        //this.add(searchbox);
         this.add(scroll, BorderLayout.SOUTH);
 
 

@@ -3,6 +3,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
@@ -35,16 +36,16 @@ public class LoginFrame extends JFrame
 		
 		JLabel or = new JLabel("Or, create new account here:");
 		JLabel newname = new JLabel("New username:");
-		JTextField createnamebox = new JTextField();
+		final JTextField createnamebox = new JTextField();
 		createnamebox.setMaximumSize(stddim);
 		JLabel newtype = new JLabel("Account type:");
 		String types[] = {"User", "Admin"};
-		JComboBox createtypebox = new JComboBox(types);
+		final JComboBox createtypebox = new JComboBox(types);
 		createtypebox.setMaximumSize(stddim);
-		JLabel newfavorite = new JLabel("Favorite Type:");
-		JTextField createfavoritebox = new JTextField();
+		JLabel newfavorite = new JLabel("Favorite Food Type:");
+		final JTextField createfavoritebox = new JTextField();
 		createfavoritebox.setMaximumSize(stddim);
-		JButton createbutton = new JButton("Create New Account");
+		final JButton createbutton = new JButton("Create New Account");
 		
 		String statement = "select id, name from user";
  	    System.out.println(statement);
@@ -80,9 +81,10 @@ public class LoginFrame extends JFrame
             {
             	try 
             	{
-            		if (loginbox.getSelectedIndex() != 0)
+            		if (loginbox.getSelectedIndex() != -1 && loginbox.getSelectedIndex() != 0)
             		{
-            			LoginFrame.this.loggedin(cn, loginbox.getSelectedIndex());
+            			String id[] = loginbox.getSelectedItem().toString().split(" ");
+            			LoginFrame.this.loggedin(cn, Integer.parseInt(id[0]));
             		}
             	}
             	catch(Exception e) {}
@@ -96,9 +98,49 @@ public class LoginFrame extends JFrame
             {
             	try 
             	{
-            		
+            		if (createnamebox.getText().length()  > 2 && createnamebox.getText().length() < 20)
+            		{
+	            		String statement = "insert into user(name, likes, type) values(" +
+	            				"?,'" + createtypebox.getSelectedItem() + "',?)";
+	            		
+	            		PreparedStatement preparedStatement = cn.prepareStatement(statement);
+	            		preparedStatement.setString(1, createnamebox.getText());
+	            		preparedStatement.setString(2, createfavoritebox.getText());
+	            		System.out.println(preparedStatement.toString());
+	            		preparedStatement.executeUpdate();
+	            		
+	            		//put new username in list
+	        	 	    preparedStatement = cn.prepareStatement("select id, name from user order by id DESC limit 1");
+	        	 	    ResultSet resultSet = preparedStatement.executeQuery();
+	        	        ResultSetMetaData rsmd = resultSet.getMetaData();
+	        	        int columnNumber = rsmd.getColumnCount();
+	        	        
+	                   while (resultSet.next()) //moves through rows, first is blank
+	                   {
+	                 	    String entry = "";
+	        	            for (int k = 1; k <= columnNumber; k++)
+	        	            {
+	        	               //moves through columns
+	        	         	   if (k != columnNumber)
+	        	         		   entry += resultSet.getString(k) + "   ";
+	        	         	   else
+	        	         		   entry += resultSet.getString(k);
+	        	            }
+	        	            loginbox.addItem(entry);
+	                   }
+	                   JOptionPane.showMessageDialog(createbutton,"New account created successfully!");
+            		}
+            		else
+            		{
+                		JOptionPane.showMessageDialog(createbutton,"Creating new account failed.");
+                		System.out.println("Insertion failed");
+            		}
             	}
-            	catch(Exception e) {}
+            	catch(Exception e) 
+            	{
+            		JOptionPane.showMessageDialog(createbutton,"Error!");
+            		System.out.println("Insertion failed");
+            	}
             }
         });
 		

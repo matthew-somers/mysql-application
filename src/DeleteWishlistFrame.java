@@ -9,9 +9,9 @@ import java.util.Calendar;
 import javax.swing.*;
 
 /*
- * Add to Wishlist Frame.
+ * Delete from Wishlist Frame.
  */
-public class WishlistFrame extends JFrame
+public class DeleteWishlistFrame extends JFrame
 {
 	private static Connection connection;
     private static PreparedStatement preparedStatement = null;
@@ -23,10 +23,10 @@ public class WishlistFrame extends JFrame
     String userid = "1";  //to be changed
     String restid = "";
     
-	public WishlistFrame(Connection cn)
+	public DeleteWishlistFrame(Connection cn)
 	{
 		connection = cn;
-        setTitle("Dishaster! - Wishlist");
+        setTitle("Dishaster! - Remove from Wishlist");
         setLayout(new GridLayout(4,2));
         setSize(new Dimension(400, 250));
         
@@ -36,7 +36,7 @@ public class WishlistFrame extends JFrame
         
 	  	ArrayList<String> names = new ArrayList<String>();
 		try {
-			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
+			names = GUIFrame.readDataBase("distinct name", 1, 4, "id = " + userid);
 		} catch (Exception e2) {
 			e2.printStackTrace();
 		}
@@ -60,11 +60,11 @@ public class WishlistFrame extends JFrame
             		name = name.replace("'", "\\'");
             		String where = "name = '" + name + "'";
             			
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
+            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 4, where);
             		for (String address : addresses)
             			input2.addItem(address);
             		input2.setSelectedItem(null); 		
-            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
+            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 4, where);
             		for (String food : foods)
             			input3.addItem(food);
             		input3.setSelectedItem(null);
@@ -81,13 +81,13 @@ public class WishlistFrame extends JFrame
             	try 
             	{
             		String where = "address = '" + input2.getSelectedItem() + "'";
-            		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
+            		restid = GUIFrame.readDataBase("restaurant_id", 1, 4, where).get(0);
             	}
             	catch(Exception e) {}
             }
         });
                 
-        saveButton = new JButton("Add");
+        saveButton = new JButton("Delete");
         resetButton = new JButton("Reset");        
         
         add(label1);
@@ -120,13 +120,14 @@ public class WishlistFrame extends JFrame
 	        	
 	        	try
 	        	{
-	        		String statement = "insert into Wishlist(id, restaurant_id, food) " + 
-	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "')";
+	        		String statement = "delete from Wishlist where" + 
+	        				" id = " + userid + " AND restaurant_id = " + restid + 
+	        				" AND food = '" + input3.getSelectedItem() + "'";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
 
 	        		preparedStatement.executeUpdate();
-		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
+		        	JOptionPane.showMessageDialog(saveButton, "Successfully deleted.");
 		        	dispose();
 	        	}
 	        	

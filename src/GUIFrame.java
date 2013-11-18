@@ -211,6 +211,21 @@ public class GUIFrame extends JFrame
             	catch(Exception e) {}
             }
         });
+        
+        JButton deletewishlistbutton = new JButton("Delete from Wishlist");
+        deletewishlistbutton.setPreferredSize(new Dimension(150, 30));
+        deletewishlistbutton.addActionListener(new ActionListener() 
+        {
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try 
+            	{
+            		DeleteWishlistFrame addwishlist = new DeleteWishlistFrame(connection);
+            	}
+            	catch(Exception e) {}
+            }
+        });
 
         // view ranking button
         JButton rankingbutton = new JButton("View Rankings");
@@ -232,6 +247,7 @@ public class GUIFrame extends JFrame
         this.add(reviewbutton, BorderLayout.WEST);
         this.add(rankingbutton, BorderLayout.CENTER);
         this.add(wishlistbutton, BorderLayout.EAST);
+        //this.add(deletewishlistbutton, BorderLayout.EAST);
         //this.add(searchbox);
         this.add(scroll, BorderLayout.SOUTH);
 
@@ -258,6 +274,8 @@ public class GUIFrame extends JFrame
         		   statement += "Serves";
         	   else if (table == 3)
         		   statement += "Restaurant join Serves using(restaurant_id)";
+        	   else if (table == 4)
+        		   statement += "Restaurant join Wishlist using(restaurant_id)";
         	   if (!where.equals(""))
         		   statement += (" where " + where);
         	   System.out.println(statement);

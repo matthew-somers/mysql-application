@@ -182,7 +182,7 @@ public class GUIFrame extends JFrame
         });
         */
         
-        JButton reviewbutton = new JButton("Insert New Review");
+        JButton reviewbutton = new JButton("View Reviews");
         reviewbutton.setPreferredSize(new Dimension(150, 30));
         reviewbutton.addActionListener(new ActionListener() 
         {
@@ -277,6 +277,8 @@ public class GUIFrame extends JFrame
         		   statement += "Restaurant join Serves using(restaurant_id)";
         	   else if (table == 4)
         		   statement += "Restaurant join Wishlist using(restaurant_id)";
+        	   else if (table == 5)
+        		   statement += "Restaurant join Review using(restaurant_id)";
         	   if (!where.equals(""))
         		   statement += (" where " + where);
         	   System.out.println(statement);

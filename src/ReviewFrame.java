@@ -1,158 +1,184 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-
-import javax.swing.*;
-
-/*
- * A review frame where a user can insert a review.
+/**
+ * A frame that allows the user to view the current reviews
+ * that he/she has made. Also in this frame the user has the
+ * ability to insert, update, and delete reviews.
+ * 
+ * Fall 2013, CS 157A, Group Project
+ * @author Kevin Tan
+ * @version 11/20/2013
  */
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import java.util.Vector;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+
 public class ReviewFrame extends JFrame
 {
 	private static Connection connection;
-    private static PreparedStatement preparedStatement = null;
-    
-    JLabel label1, label2, label3, label4; 
-    JComboBox input1, input2, input3, input4;
-    JButton saveButton, resetButton;
-    
-    String[] ratingChoices = {"1 - Dishaster!", "2 - Poor", "3 - Meh", "4 - Good", "5 - Great" };
-    String restid = "";
-    
-	public ReviewFrame(Connection cn, final int userid)
+	private static PreparedStatement preparedStatement = null;
+	
+	// title of the frame
+	private static final String FRAME_TITLE = "Dishaster! - Reviews";
+	
+	// panel that will contain the table of reviews
+	final static JPanel reviewList = new JPanel();
+	
+	/**
+	 * Constructs the review frame.
+	 * @param connection the connection to database
+	 * @param userid the user id used to log in
+	 * @throws SQLException
+	 */
+	public ReviewFrame(final Connection connection, final int userid) throws SQLException
 	{
-		connection = cn;
-        setTitle("Dishaster! - New Review");
-        setLayout(new GridLayout(5,2));
-        setSize(new Dimension(400, 250));
+		ReviewFrame.connection = connection;
+		
+		// set the attributes of the frame
+        setTitle(FRAME_TITLE);
+        setLayout(new FlowLayout(FlowLayout.CENTER));
+        setSize(new Dimension(500, 500)); // (width, height)
         
-        label1 = new JLabel(" Restaurant:");
-        label2 = new JLabel(" Address:");
-        label3 = new JLabel(" Dish:");
-        label4 = new JLabel(" Rating:");
-        
-	  	ArrayList<String> names = new ArrayList<String>();
-		try {
-			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
-		} catch (Exception e2) {
-			e2.printStackTrace();
-		}
-
-        input1 = new JComboBox(names.toArray());
-        input1.setSelectedItem(null);
-        input2 = new JComboBox();
-        input3 = new JComboBox();
-        input4 = new JComboBox();
-        
-        input1.addActionListener(new ActionListener() 
+        // button to INSERT a new review
+        JButton insertButton = new JButton("New Review");
+        insertButton.setPreferredSize(new Dimension(150, 30));
+        insertButton.addActionListener(new ActionListener() 
         {
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            	try 
-            	{
-            		input2.removeAllItems();
-            		input3.removeAllItems();
-
-            		String name = (String)input1.getSelectedItem();
-            		name = name.replace("'", "\\'");
-            		String where = "name = '" + name + "'";
-            		
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
-            		for (String address : addresses)
-            			input2.addItem(address);
-            		input2.setSelectedItem(null); 		
-            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
-            		for (String food : foods)
-            			input3.addItem(food);
-            		input3.setSelectedItem(null);
-            	}
+            	try { new InsertReviewFrame(connection, userid); } // opens new frame
             	catch(Exception e) {}
             }
         });
+        add(insertButton); // add button to the frame
         
-        input2.addActionListener(new ActionListener() 
+        
+        // button to UPDATE a review
+        JButton updateButton = new JButton("Update Review");
+        updateButton.setPreferredSize(new Dimension(150, 30));
+        updateButton.addActionListener(new ActionListener() 
         {
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            	try 
-            	{
-            		String where = "address = '" + input2.getSelectedItem() + "'";
-            		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
-            	}
+            	try { new UpdateReviewFrame(connection, userid); } // opens new frame
             	catch(Exception e) {}
             }
         });
-        
-        input4 = new JComboBox(ratingChoices);
-        input4.setSelectedItem(null);
-        
-        saveButton = new JButton("Add");
-        resetButton = new JButton("Reset");
+        add(updateButton); // add button to the frame
         
         
-        add(label1);
-        add(input1);
-        add(label2);
-        add(input2);
-        add(label3);
-        add(input3);
-        add(label4);
-        add(input4);
-        add(saveButton);
-        add(resetButton);
-        
-        // resets all the fields
-        resetButton.addActionListener(new ActionListener() 
+        // button to DELETE a review
+        JButton deleteButton = new JButton("Delete Review");
+        deleteButton.setPreferredSize(new Dimension(150, 30));
+        deleteButton.addActionListener(new ActionListener() 
         {
-        	public void actionPerformed(ActionEvent ae)
-        	{
-        		input1.setSelectedItem(null);
-        		input2.setSelectedItem(null);
-        		input3.setSelectedItem(null);
-        		input4.setSelectedItem(null);
-        	}
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try { new DeleteReviewFrame(connection, userid); } // opens new frame
+            	catch(Exception e) {}
+            }
         });
+        add(deleteButton); // add button to the frame
         
-        // insert new review
-        saveButton.addActionListener(new ActionListener() 
+        
+        // button to refresh the list of reviews
+        JButton refreshButton = new JButton("Delete Review");
+        refreshButton.setPreferredSize(new Dimension(150, 30));
+        refreshButton.addActionListener(new ActionListener() 
         {
-        	public void actionPerformed(ActionEvent ae)
-        	{
-	        	String value1 = (String) input1.getSelectedItem();
-	        	String value2 = (String) input2.getSelectedItem();
-	        	String value3 = (String) input3.getSelectedItem();
-	        	String value4 = Integer.toString(input4.getSelectedIndex() + 1);
-	        	System.out.println(value1 + value2 + value3 + value4);
-	        	
-	        	try
-	        	{
-	        		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	        		Calendar cal = Calendar.getInstance();
-	        		String statement = "insert into Review(reviewer_id, restaurant_id, food, rating, created) " + 
-	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
-	        		System.out.println(statement);
-	        		preparedStatement = connection.prepareStatement(statement);
-
-	        		preparedStatement.executeUpdate();
-		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
-		        	dispose();
-	        	}
-	        	
-	        	catch(Exception e)
-	        	{
-	        		JOptionPane.showMessageDialog(saveButton,"Error!");
-	        	}
-        	}
+            @Override
+            public void actionPerformed(ActionEvent event) 
+            {
+            	try { new DeleteReviewFrame(connection, userid); } // opens new frame
+            	catch(Exception e) {}
+            }
         });
-    
+        add(deleteButton); // add button to the frame
+        
+        
+        // add list of reviews
+        add(reviewList);
+        
+        // get the list of reviews that match the user id	    
+        updateTable("SELECT name as restaurant, food, rating, created as date " +
+				  	"FROM Review NATURAL JOIN Restaurant " +
+				  	"WHERE reviewer_id = " + userid + " " +
+        			"ORDER BY created DESC;");
+        
+        
+        // other frame option statements
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	}
+        
+	} // end ReviewFrame constructor
 	
+	
+	/**
+	 * Builds a table model
+	 * @author Paul Vargas on http://stackoverflow.com/questions/10620448/most-simple-code-to-populate-jtable-from-resultset
+	 * @param rs the result set
+	 * @return a table model with the data and column names
+	 * @throws SQLException
+	 */
+	public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException 
+	{
+        ResultSetMetaData metaData = rs.getMetaData();
+
+        // names of columns
+        Vector<String> columnNames = new Vector<String>();
+        int columnCount = metaData.getColumnCount();
+        for (int column = 1; column <= columnCount; column++) {
+            columnNames.add(metaData.getColumnName(column));
+        }
+
+        // data of the table
+        Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+        while (rs.next()) {
+            Vector<Object> vector = new Vector<Object>();
+            for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+                vector.add(rs.getObject(columnIndex));
+            }
+            data.add(vector);
+        }
+
+        return new DefaultTableModel(data, columnNames);
+    }
+	
+	
+	/**
+	 * Updates the table with a new ranking category
+	 * @param statement the SQL query to be executed
+	 * @throws SQLException
+	 */
+	public static void updateTable(String statement) throws SQLException
+	{
+		reviewList.removeAll(); // first clear the existing table
+		
+		preparedStatement = connection.prepareStatement(statement);
+        ResultSet resultSet = preparedStatement.executeQuery();
+	    JTable table = new JTable(buildTableModel(resultSet));
+	    
+	    reviewList.add(new JScrollPane(table)); // add the new table to the panel
+	    
+	    reviewList.repaint();
+	    reviewList.revalidate();
+	}
 }

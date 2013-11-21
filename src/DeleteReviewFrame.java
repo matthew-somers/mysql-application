@@ -10,10 +10,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import javax.swing.*;
 
@@ -135,7 +132,7 @@ public class DeleteReviewFrame extends JFrame
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully deleted.");
 		        	
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");

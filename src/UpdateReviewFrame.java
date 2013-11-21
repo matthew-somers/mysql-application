@@ -67,11 +67,11 @@ public class UpdateReviewFrame extends JFrame
             		name = name.replace("'", "\\'");
             		String where = "name = '" + name + "'";
             		
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
+            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 5, where);
             		for (String address : addresses)
             			input2.addItem(address);
             		input2.setSelectedItem(null); 		
-            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
+            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 5, where);
             		for (String food : foods)
             			input3.addItem(food);
             		input3.setSelectedItem(null);
@@ -153,7 +153,7 @@ public class UpdateReviewFrame extends JFrame
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully updated.");
 		        	
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");

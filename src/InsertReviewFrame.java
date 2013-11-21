@@ -143,7 +143,7 @@ public class InsertReviewFrame extends JFrame
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
 		        	
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");

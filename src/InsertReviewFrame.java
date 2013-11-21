@@ -138,7 +138,7 @@ public class InsertReviewFrame extends JFrame
 	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
-
+		        	
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
 		        	
@@ -147,6 +147,7 @@ public class InsertReviewFrame extends JFrame
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");
+		        	
 		        	dispose();
 	        	}
 	        	

@@ -5,8 +5,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /*
  * Add to Wishlist Frame.
@@ -14,130 +16,138 @@ import javax.swing.*;
 public class WishlistFrame extends JFrame
 {
 	private static Connection connection;
-    private static PreparedStatement preparedStatement = null;
-    
-    JLabel label1, label2, label3;
-    JComboBox input1, input2, input3;
-    JButton saveButton, resetButton;
-    
-    String restid = "";
-    
-	public WishlistFrame(Connection cn, final int userid)
+	private static PreparedStatement preparedStatement = null;
+	
+	// title of the frame
+	private static final String FRAME_TITLE = "Dishaster! - Your Wishlist";
+	
+	// panel that will contain the table of reviews
+	final static JPanel reviewList = new JPanel();
+	
+	public WishlistFrame(final Connection connection, final int userid) throws SQLException
 	{
-		connection = cn;
-        setTitle("Dishaster! - Wishlist");
-        setLayout(new GridLayout(4,2));
-        setSize(new Dimension(400, 250));
-        
-        label1 = new JLabel(" Restaurant:");
-        label2 = new JLabel(" Address:");
-        label3 = new JLabel(" Dish:");
-        
-	  	ArrayList<String> names = new ArrayList<String>();
-		try {
-			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
-		} catch (Exception e2) {
-			e2.printStackTrace();
-		}
-
-        input1 = new JComboBox(names.toArray());
-        input1.setSelectedItem(null);
-        input2 = new JComboBox();
-        input3 = new JComboBox();
-        
-        input1.addActionListener(new ActionListener() 
-        {
-            @Override
-            public void actionPerformed(ActionEvent event) 
-            {
-            	try 
-            	{
-            		input2.removeAllItems();
-            		input3.removeAllItems();
-
-            		String name = (String)input1.getSelectedItem();
-            		name = name.replace("'", "\\'");
-            		String where = "name = '" + name + "'";
-            			
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
-            		for (String address : addresses)
-            			input2.addItem(address);
-            		input2.setSelectedItem(null); 		
-            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
-            		for (String food : foods)
-            			input3.addItem(food);
-            		input3.setSelectedItem(null);
-            	}
-            	catch(Exception e) {}
-            }
-        });
-        
-        input2.addActionListener(new ActionListener() 
-        {
-            @Override
-            public void actionPerformed(ActionEvent event) 
-            {
-            	try 
-            	{
-            		String where = "address = '" + input2.getSelectedItem() + "'";
-            		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
-            	}
-            	catch(Exception e) {}
-            }
-        });
-                
-        saveButton = new JButton("Add");
-        resetButton = new JButton("Reset");        
-        
-        add(label1);
-        add(input1);
-        add(label2);
-        add(input2);
-        add(label3);
-        add(input3);
-        add(saveButton);
-        add(resetButton);
-        
-        resetButton.addActionListener(new ActionListener() 
-        {
-        	public void actionPerformed(ActionEvent ae)
-        	{
-        		input1.setSelectedItem(null);
-        		input2.setSelectedItem(null);
-        		input3.setSelectedItem(null);
-        	}
-        });
-        
-        saveButton.addActionListener(new ActionListener() 
-        {
-        	public void actionPerformed(ActionEvent ae)
-        	{
-	        	String value1 = (String) input1.getSelectedItem();
-	        	String value2 = (String) input2.getSelectedItem();
-	        	String value3 = (String) input3.getSelectedItem();
-	        	System.out.println(value1 + value2 + value3);
-	        	
-	        	try
+		this.connection = connection;
+		
+		// set the attributes of the frame
+	    setTitle(FRAME_TITLE);
+	    setLayout(new FlowLayout(FlowLayout.CENTER));
+	    setSize(new Dimension(500, 500)); // (width, height)
+	    
+	    // button to INSERT a new review
+	    JButton insertButton = new JButton("Add to Wishlist");
+	    insertButton.setPreferredSize(new Dimension(150, 30));
+	    insertButton.addActionListener(new ActionListener() 
+	    {
+	        @Override
+	        public void actionPerformed(ActionEvent event) 
+	        {
+	        	try { new WishlistAdd(connection, userid); } // opens new frame
+	        	catch(Exception e) {}
+	        }
+	    });
+	    add(insertButton); // add button to the frame
+	    
+	    
+	    // button to UPDATE a review
+	    JButton updateButton = new JButton("Update Wishlist");
+	    updateButton.setPreferredSize(new Dimension(150, 30));
+	    updateButton.addActionListener(new ActionListener() 
+	    {
+	        @Override
+	        public void actionPerformed(ActionEvent event) 
+	        {
+	        	try { new UpdateReviewFrame(connection, userid); } // opens new frame
+	        	catch(Exception e) {}
+	        }
+	    });
+	    add(updateButton); // add button to the frame
+	    
+	    
+	    // button to DELETE a review
+	    JButton deleteButton = new JButton("Delete from Wishlist");
+	    deleteButton.setPreferredSize(new Dimension(150, 30));
+	    deleteButton.addActionListener(new ActionListener() 
+	    {
+	        @Override
+	        public void actionPerformed(ActionEvent event) 
+	        {
+	        	try 
 	        	{
-	        		String statement = "insert into Wishlist(id, restaurant_id, food) " + 
-	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "')";
-	        		System.out.println(statement);
-	        		preparedStatement = connection.prepareStatement(statement);
+	        		new DeleteWishlistFrame(connection, userid);
+	        	} // opens new frame
+	        	catch(Exception e) {}
+	        }
+	    });
+	    add(deleteButton); // add button to the frame
+	    
+	    // add list of reviews
+	    add(reviewList);
+	    
+	    // get the list of reviews that match the user id	    
+	    updateTable("SELECT food, name " +
+				  	"FROM Wishlist NATURAL JOIN Restaurant " +
+				  	"WHERE id = " + userid + " " +
+	    			"");
+	    
+	    
+	    // other frame option statements
+	    setVisible(true);
+	    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	    
+	} // end ReviewFrame constructor
 
-	        		preparedStatement.executeUpdate();
-		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
-		        	dispose();
-	        	}
-	        	
-	        	catch(Exception e)
-	        	{
-	        		JOptionPane.showMessageDialog(saveButton,"Error!");
-	        	}
-        	}
-        });
+
+
+/**
+ * Builds a table model
+ * @author Paul Vargas on http://stackoverflow.com/questions/10620448/most-simple-code-to-populate-jtable-from-resultset
+ * @param rs the result set
+ * @return a table model with the data and column names
+ * @throws SQLException
+ */
+public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException 
+{
+    ResultSetMetaData metaData = rs.getMetaData();
+
+    // names of columns
+    Vector<String> columnNames = new Vector<String>();
+    int columnCount = metaData.getColumnCount();
+    for (int column = 1; column <= columnCount; column++) {
+        columnNames.add(metaData.getColumnName(column));
+    }
+
+    // data of the table
+    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+    while (rs.next()) {
+        Vector<Object> vector = new Vector<Object>();
+        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+            vector.add(rs.getObject(columnIndex));
+        }
+        data.add(vector);
+    }
+
+    return new DefaultTableModel(data, columnNames);
+}
+
+
+/**
+ * Updates the table with a new ranking category
+ * @param statement the SQL query to be executed
+ * @throws SQLException
+ */
+public static void updateTable(String statement) throws SQLException
+{
+	reviewList.removeAll(); // first clear the existing table
+	System.out.println(statement);
+	
+	preparedStatement = connection.prepareStatement(statement);
+    ResultSet resultSet = preparedStatement.executeQuery();
+    JTable table = new JTable(buildTableModel(resultSet));
     
-        setVisible(true);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	}
+    reviewList.add(new JScrollPane(table)); // add the new table to the panel
+    
+    reviewList.repaint();
+    reviewList.revalidate();
+}
 	
 }

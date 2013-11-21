@@ -197,7 +197,7 @@ public class GUIFrame extends JFrame
             }
         });
         
-        JButton wishlistbutton = new JButton("Add to Wishlist");
+        JButton wishlistbutton = new JButton("View your Wishlist");
         wishlistbutton.setPreferredSize(new Dimension(150, 30));
         wishlistbutton.addActionListener(new ActionListener() 
         {
@@ -207,21 +207,6 @@ public class GUIFrame extends JFrame
             	try 
             	{
             		WishlistFrame addwishlist = new WishlistFrame(connection, userid);
-            	}
-            	catch(Exception e) {}
-            }
-        });
-        
-        JButton deletewishlistbutton = new JButton("Delete from Wishlist");
-        deletewishlistbutton.setPreferredSize(new Dimension(150, 30));
-        deletewishlistbutton.addActionListener(new ActionListener() 
-        {
-            @Override
-            public void actionPerformed(ActionEvent event) 
-            {
-            	try 
-            	{
-            		DeleteWishlistFrame addwishlist = new DeleteWishlistFrame(connection, userid);
             	}
             	catch(Exception e) {}
             }
@@ -246,8 +231,7 @@ public class GUIFrame extends JFrame
         //this.add(searchbutton);
         JPanel wishlists = new JPanel();
         wishlists.add(wishlistbutton);
-        wishlists.add(deletewishlistbutton);
-        this.add(wishlists, BorderLayout.EAST);
+        this.add(wishlistbutton, BorderLayout.EAST);
         this.add(reviewbutton, BorderLayout.WEST);
         this.add(rankingbutton, BorderLayout.CENTER);
         this.add(scroll, BorderLayout.SOUTH);

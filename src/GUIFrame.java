@@ -52,7 +52,7 @@ public class GUIFrame extends JFrame
         //final JTextField searchbox = new JTextField(20);
         //searchbox.setText("name");
         
-        String sfirstcriteria[] = {"Select search criteria:", "Restaurant Name", "Specific Food" };
+        String sfirstcriteria[] = {"Select search criteria:", "Restaurant Name", "Specific Food", "Location" };
         final JComboBox firstcriteria = new JComboBox(sfirstcriteria);
         firstcriteria.setSelectedIndex(0);
         final JComboBox secondcriteria = new JComboBox();
@@ -87,6 +87,14 @@ public class GUIFrame extends JFrame
 	            		foods = readDataBase("distinct food", 1, 3, "");
 	            		for (String food : foods)	
 	            			secondcriteria.addItem(food);
+            		}
+            		else if (firstcriteria.getSelectedIndex() == 3)
+            		{
+	            		secondcriteria.addItem("Select city:");
+	            		ArrayList<String> citys = new ArrayList<String>();
+	            		citys = readDataBase("distinct city", 1, 3, "");
+	            		for (String city : citys)	
+	            			secondcriteria.addItem(city);
             		}
             		
             	}
@@ -123,6 +131,17 @@ public class GUIFrame extends JFrame
 	            		updateTable("select name, address, city, price from Restaurant join Serves using(restaurant_id) where food = '" + food + "'");
 
             		}
+            		else if (firstcriteria.getSelectedIndex() == 3)
+            		{
+	        			thirdcriteria.removeAllItems();
+	            		ArrayList<String> list = new ArrayList<String>();
+	            		String city = (String) secondcriteria.getSelectedItem();
+	            		city = city.replace("'", "\\'");
+	            		list = readDataBase("distinct type", 1, 3, "city = '" + city + "'");
+	            		thirdcriteria.addItem("Select type of food:");
+	            		for (String element : list)
+	            			thirdcriteria.addItem(element);
+            		}
             	}
             	catch(Exception e) {}
             }
@@ -141,13 +160,26 @@ public class GUIFrame extends JFrame
             			;
             		else if (thirdcriteria.getSelectedIndex() == 0)
             			;
-            		else
+            		else if (firstcriteria.getSelectedIndex() == 1)
             		{
 	            		ArrayList<String> list = new ArrayList<String>();
 	            		String address = (String) thirdcriteria.getSelectedItem();
 	            		//name = name.replace("'", "\\'");
 	          
 	            		String statement = ("select food, price from Restaurant join Serves using(restaurant_id) where address = '" + address + "'");
+	            		updateTable(statement);
+	            		GUIFrame.this.repaint();
+	            		GUIFrame.this.revalidate();
+            		}
+            		else if (firstcriteria.getSelectedIndex() == 3)
+            		{
+	            		ArrayList<String> list = new ArrayList<String>();
+	            		String type = (String) thirdcriteria.getSelectedItem();
+	            		type = type.replace("'", "\\'");
+	            		String city = (String) secondcriteria.getSelectedItem();
+	            		city = city.replace("'", "\\'");
+	            		String statement = ("select name, food, price from Restaurant join Serves using(restaurant_id) where type = '" + type + "'" +
+	            				"and city = '" + city + "'");
 	            		updateTable(statement);
 	            		GUIFrame.this.repaint();
 	            		GUIFrame.this.revalidate();

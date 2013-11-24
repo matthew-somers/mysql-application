@@ -27,6 +27,7 @@ public class WishlistFrame extends JFrame
 	static JPanel wishlist;
 	static Vector<Vector<Object>> data;
 	static JTable table;
+	static JButton deleteButton;
 	
 	public WishlistFrame(final Connection connection, final int userid) throws SQLException
 	{
@@ -40,7 +41,7 @@ public class WishlistFrame extends JFrame
 	    setSize(new Dimension(500, 500)); // (width, height)
 	    
 	    // button to DELETE a wishlist
-	    final JButton deleteButton = new JButton("Delete from Wishlist");
+	    deleteButton = new JButton("Delete from Wishlist");
 	    deleteButton.setEnabled(false);
 	    deleteButton.setPreferredSize(new Dimension(150, 30));
 	    
@@ -76,6 +77,7 @@ public class WishlistFrame extends JFrame
 						  	"FROM Wishlist NATURAL JOIN Restaurant " +
 						  	"WHERE id = " + userid + " " +
 			    			"");
+		        	deleteButton.setEnabled(false);
 
 	        	}
 	        	catch(Exception e) {}
@@ -92,7 +94,7 @@ public class WishlistFrame extends JFrame
 	        {
 	        	try { new WishlistAdd(connection, userid); } // opens new frame
 	        	catch(Exception e) {}
-	        	deleteButton.setEnabled(true);
+	        	deleteButton.setEnabled(false);
 	        }
 	    });
 	    
@@ -107,16 +109,6 @@ public class WishlistFrame extends JFrame
 				  	"FROM Wishlist NATURAL JOIN Restaurant " +
 				  	"WHERE id = " + userid + " " +
 	    			"");
-	    
-	    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-	        public void valueChanged(ListSelectionEvent event) {
-	        	deleteButton.setEnabled(true);
-	        }
-	    });
-	    
-	    int row = table.getSelectedRow();
-	    System.out.println(table.getModel().getValueAt(0, 0));
-	    //System.out.println(((JTable) ((JScrollPane) wishlist.getComponent(0)).getComponent(0)).getModel().getValueAt(0, 0).toString());
 	    
 	    // other frame option statements
 	    setVisible(true);
@@ -185,6 +177,11 @@ public static void updateTable(String statement) throws SQLException
 	preparedStatement = connection.prepareStatement(statement);
     ResultSet resultSet = preparedStatement.executeQuery();
     table = new JTable(buildTableModel(resultSet));
+    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+        public void valueChanged(ListSelectionEvent event) {
+        	deleteButton.setEnabled(true);
+        }
+    });
     wishlist.add(new JScrollPane(table)); // add the new table to the panel
     
     wishlist.repaint();

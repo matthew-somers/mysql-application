@@ -41,6 +41,7 @@ public class ReviewFrame extends JFrame
 	// panel that will contain the table of reviews
 	final static JPanel reviewList = new JPanel();
 	static JTable table;
+	static JButton deleteButton;
 	
 	/**
 	 * Constructs the review frame.
@@ -67,6 +68,7 @@ public class ReviewFrame extends JFrame
             {
             	try { new InsertReviewFrame(connection, userid); } // opens new frame
             	catch(Exception e) {}
+            	deleteButton.setEnabled(false);
             }
         });
         add(insertButton); // add button to the frame
@@ -82,13 +84,14 @@ public class ReviewFrame extends JFrame
             {
             	try { new UpdateReviewFrame(connection, userid); } // opens new frame
             	catch(Exception e) {}
+            	deleteButton.setEnabled(false);
             }
         });
         add(updateButton); // add button to the frame
         
         
         // button to refresh the list of reviews
-        final JButton deleteButton = new JButton("Delete Review");
+        deleteButton = new JButton("Delete Review");
         deleteButton.setEnabled(false);
         deleteButton.setPreferredSize(new Dimension(150, 30));
         deleteButton.addActionListener(new ActionListener() 
@@ -102,18 +105,18 @@ public class ReviewFrame extends JFrame
 	        		if (row == -1)
 	        			return;
         		
-	        		String restname = table.getModel().getValueAt(row, 1).toString();
-	        		restname = restname.replace("'", "\\'");
-	        		String statement = "select restaurant_id from Wishlist join Restaurant using(restaurant_id) where" + 
-	        				" id = " + userid + " AND name = '" + restname + "'";
+	        		String restaddr = table.getModel().getValueAt(row, 1).toString();
+	        		restaddr = restaddr.replace("'", "\\'");
+	        		String statement = "select restaurant_id from Review join Restaurant using(restaurant_id) where" + 
+	        				" reviewer_id = " + userid + " AND address = '" + restaddr + "'";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
 	        		ResultSet resultSet = preparedStatement.executeQuery();
 	        		resultSet.next();
 	        		String restid = resultSet.getString(1);
-	        		String food = table.getModel().getValueAt(row, 0).toString();
-	        		statement = "delete from Wishlist where" + 
-	        				" id = " + userid + " AND restaurant_id = " + restid + 
+	        		String food = table.getModel().getValueAt(row, 2).toString();
+	        		statement = "delete from Review where" + 
+	        				" reviewer_id = " + userid + " AND restaurant_id = " + restid + 
 	        				" AND food = '" + food + "'";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
@@ -123,18 +126,13 @@ public class ReviewFrame extends JFrame
 						  	"FROM Wishlist NATURAL JOIN Restaurant " +
 						  	"WHERE id = " + userid + " " +
 			    			"");
+		        	deleteButton.setEnabled(false);
 
 	        	}
 	        	catch(Exception e) {}
 	        }
         });
         add(deleteButton); // add button to the frame
-        
-	    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-	        public void valueChanged(ListSelectionEvent event) {
-	        	deleteButton.setEnabled(true);
-	        }
-	    });
         
         // add list of reviews
         add(reviewList);
@@ -197,7 +195,11 @@ public class ReviewFrame extends JFrame
 		preparedStatement = connection.prepareStatement(statement);
         ResultSet resultSet = preparedStatement.executeQuery();
 	    table = new JTable(buildTableModel(resultSet));
-	    
+	    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+	        public void valueChanged(ListSelectionEvent event) {
+	        	deleteButton.setEnabled(true);
+	        }
+	    });
 	    reviewList.add(new JScrollPane(table)); // add the new table to the panel
 	    
 	    reviewList.repaint();

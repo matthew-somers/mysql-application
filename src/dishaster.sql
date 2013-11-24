@@ -28,12 +28,14 @@ restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
 rating int,
 created DATE,
-updatedAt DATE);
+updatedAt DATE,
+UNIQUE `UniqueReview` (reviewer_id, restaurant_id, food));
 
 create table Wishlist
 (id int REFERENCES User(id),
 restaurant_id int,
-food varchar(100) REFERENCES Serves(food));
+food varchar(100) REFERENCES Serves(food),
+UNIQUE `UniqueWishlist` (id, restaurant_id, food));
 
 create table ReviewArchive
 (review_id int PRIMARY KEY AUTO_INCREMENT,

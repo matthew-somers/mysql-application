@@ -153,7 +153,7 @@ public class InsertReviewFrame extends JFrame
 	        	
 	        	catch(Exception e)
 	        	{
-	        		JOptionPane.showMessageDialog(saveButton,"Error!");
+	        		JOptionPane.showMessageDialog(saveButton,"You have made this review already. If you wish to change the rating, select 'Update Review'.");
 	        	}
         	}
         });

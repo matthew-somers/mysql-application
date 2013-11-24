@@ -10,6 +10,7 @@
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -42,6 +43,10 @@ public class ReviewFrame extends JFrame
 	final static JPanel reviewList = new JPanel();
 	static JTable table;
 	static JButton deleteButton;
+	
+	// label for the amount of reviews made
+	final static JLabel reviewCount = new JLabel();
+	static ResultSet countResultSet = null;
 	
 	/**
 	 * Constructs the review frame.
@@ -133,6 +138,13 @@ public class ReviewFrame extends JFrame
 	        }
         });
         add(deleteButton); // add button to the frame
+        
+        // label for the amount of reviews made
+        preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM Review WHERE reviewer_id = " + userid + ";");
+        countResultSet = preparedStatement.executeQuery();
+        countResultSet.next();
+        reviewCount.setText("Current amount of reviews made: " + countResultSet.getString(1));
+        add(reviewCount);
         
         // add list of reviews
         add(reviewList);

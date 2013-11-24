@@ -135,7 +135,7 @@ public class WishlistAdd extends JFrame
 	        	
 	        	catch(Exception e)
 	        	{
-	        		JOptionPane.showMessageDialog(saveButton,"Error!");
+	        		JOptionPane.showMessageDialog(saveButton,"This item is already on your wishlist.");
 	        	}
         	}
         });

@@ -36,7 +36,7 @@ public class LoginFrame extends JFrame
 		loginbox.setMaximumSize(stddim);
 		
 		JLabel or = new JLabel("Or, create new account here:");
-		JLabel newname = new JLabel("New username:");
+		JLabel newname = new JLabel("   New username:");
 		final JTextField createnamebox = new JTextField();
 		createnamebox.setMaximumSize(stddim);
 		JLabel newtype = new JLabel("Account type:");
@@ -100,10 +100,11 @@ public class LoginFrame extends JFrame
             {
             	try 
             	{
-            		if (createnamebox.getText().length()  > 2 && createnamebox.getText().length() < 20)
+            		if (createnamebox.getText().length()  > 2 && createnamebox.getText().length() < 20 
+            				&& createfavoritebox.getText().length() < 20)
             		{
 	            		String statement = "insert into user(name, likes, type) values(" +
-	            				"?,'" + createtypebox.getSelectedItem() + "',?)";
+	            				"?,?,'" + createtypebox.getSelectedItem() + "')";
 	            		
 	            		PreparedStatement preparedStatement = cn.prepareStatement(statement);
 	            		preparedStatement.setString(1, createnamebox.getText());
@@ -158,7 +159,7 @@ public class LoginFrame extends JFrame
 		listpane.add(createfavoritebox);
 		listpane.add(createbutton);
 		
-		setSize(250, 300);
+		setSize(300, 300);
 		add(listpane);
 		this.repaint();
 		this.revalidate();

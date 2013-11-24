@@ -29,6 +29,7 @@ public class LoginFrame extends JFrame
 		setTitle("Login to Dishaster!");
 		setVisible(true);
 		Dimension stddim = new Dimension(300, 25);
+		final ArrayList<String> accounttypelist = new ArrayList<String>();
 		
 		JLabel name = new JLabel("Select your username to login!");
 		final JComboBox loginbox = new JComboBox();
@@ -47,7 +48,7 @@ public class LoginFrame extends JFrame
 		createfavoritebox.setMaximumSize(stddim);
 		final JButton createbutton = new JButton("Create New Account");
 		
-		String statement = "select id, name from user";
+		String statement = "select id, name, type from user";
  	    System.out.println(statement);
  	    
  	    loginbox.addItem("Select username");
@@ -83,8 +84,9 @@ public class LoginFrame extends JFrame
             	{
             		if (loginbox.getSelectedIndex() != -1 && loginbox.getSelectedIndex() != 0)
             		{
-            			String id[] = loginbox.getSelectedItem().toString().split(" ");
-            			LoginFrame.this.loggedin(cn, Integer.parseInt(id[0]));
+            			String cut[] = loginbox.getSelectedItem().toString().split("   ");
+            			System.out.println(cut.length);
+            			LoginFrame.this.loggedin(cn, Integer.parseInt(cut[0]), cut[2]);
             		}
             	}
             	catch(Exception e) {}
@@ -110,7 +112,7 @@ public class LoginFrame extends JFrame
 	            		preparedStatement.executeUpdate();
 	            		
 	            		//put new username in list
-	        	 	    preparedStatement = cn.prepareStatement("select id, name from user order by id DESC limit 1");
+	        	 	    preparedStatement = cn.prepareStatement("select id, name, type from user order by id DESC limit 1");
 	        	 	    ResultSet resultSet = preparedStatement.executeQuery();
 	        	        ResultSetMetaData rsmd = resultSet.getMetaData();
 	        	        int columnNumber = rsmd.getColumnCount();
@@ -163,9 +165,9 @@ public class LoginFrame extends JFrame
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public void loggedin(Connection cn, int userid)
+	public void loggedin(Connection cn, int userid, String accounttype)
 	{
-		GUIFrame view = new GUIFrame(cn, userid);
+		GUIFrame view = new GUIFrame(cn, userid, accounttype);
 		this.dispose();
 	}
 }

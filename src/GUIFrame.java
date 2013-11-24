@@ -36,7 +36,7 @@ public class GUIFrame extends JFrame
     private static int userid;
     JTable table;
     
-	public GUIFrame(Connection cn, final int userid)
+	public GUIFrame(Connection cn, final int userid, String accounttype)
 	{
 		this.userid = userid;
 		connection = cn;
@@ -212,6 +212,25 @@ public class GUIFrame extends JFrame
         buttons.add(wishlistbutton, BorderLayout.CENTER);
         buttons.add(reviewbutton, BorderLayout.SOUTH);
         buttons.add(rankingbutton, BorderLayout.NORTH);
+        
+        if (accounttype.equals("admin"))
+		{
+        	JButton adminbutton = new JButton("Admin Panel");
+            adminbutton.addActionListener(new ActionListener() 
+            {
+                @Override
+                public void actionPerformed(ActionEvent event) 
+                {
+                	try 
+                	{
+
+                	}
+                	catch(Exception e) {}
+                }
+            });
+            buttons.add(adminbutton);
+		}
+        
         this.add(buttons, BorderLayout.CENTER);
 
         //setResizable(false);

@@ -10,10 +10,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import javax.swing.*;
 
@@ -31,20 +28,20 @@ public class DeleteReviewFrame extends JFrame
 	public DeleteReviewFrame(Connection cn, final int userid)
 	{
 		connection = cn;
-        setTitle("Dishaster! - New Review");
-        setLayout(new GridLayout(5,2));
+        setTitle("Dishaster! - Delete Review");
+        setLayout(new GridLayout(4,2));
         setSize(new Dimension(400, 250));
         
         label1 = new JLabel(" Restaurant:");
         label2 = new JLabel(" Address:");
         label3 = new JLabel(" Dish:");
         
+        // string for where statement
+        String where = "reviewer_id = " + userid;
+        
 	  	ArrayList<String> names = new ArrayList<String>();
-		try {
-			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
-		} catch (Exception e2) {
-			e2.printStackTrace();
-		}
+		try { names = GUIFrame.readDataBase("distinct name", 1, 5, where); } 
+		catch (Exception e2) { e2.printStackTrace(); }
 
         input1 = new JComboBox(names.toArray());
         input1.setSelectedItem(null);
@@ -63,13 +60,13 @@ public class DeleteReviewFrame extends JFrame
 
             		String name = (String)input1.getSelectedItem();
             		name = name.replace("'", "\\'");
-            		String where = "name = '" + name + "'";
+            		String where = "name = '" + name + "'" + "AND reviewer_id = " + userid;
             		
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
+            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 5, where);
             		for (String address : addresses)
             			input2.addItem(address);
             		input2.setSelectedItem(null); 		
-            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
+            		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 5, where);
             		for (String food : foods)
             			input3.addItem(food);
             		input3.setSelectedItem(null);
@@ -92,18 +89,16 @@ public class DeleteReviewFrame extends JFrame
             }
         });
         
-        saveButton = new JButton("Add");
+        saveButton = new JButton("Delete");
         resetButton = new JButton("Reset");
         
         
-        add(label1);
+        add(label1); // restaurant
         add(input1);
-        add(label2);
+        add(label2); // address
         add(input2);
-        add(label3);
+        add(label3); // food
         add(input3);
-        add(label4);
-        add(input4);
         add(saveButton);
         add(resetButton);
         
@@ -124,29 +119,24 @@ public class DeleteReviewFrame extends JFrame
         {
         	public void actionPerformed(ActionEvent ae)
         	{
-	        	String value1 = (String) input1.getSelectedItem();
-	        	String value2 = (String) input2.getSelectedItem();
-	        	String value3 = (String) input3.getSelectedItem();
-	        	String value4 = Integer.toString(input4.getSelectedIndex() + 1);
-	        	System.out.println(value1 + value2 + value3 + value4);
-	        	
 	        	try
 	        	{
 	        		String statement = "DELETE FROM Review " +
 	        						   "WHERE reviewer_id = " + userid + " " +
 	        						   	 "AND restaurant_id = " + restid + " " +
-	        						   	 "AND food = " + value3;
+	        						   	 "AND food = '" + input3.getSelectedItem() + "' ";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
-
+		        	
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully deleted.");
 		        	
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");
+		        	
 		        	dispose();
 	        	}
 	        	

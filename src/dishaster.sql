@@ -12,7 +12,7 @@ city varchar(30));
 create table Serves
 (restaurant_id int,
 food varchar(100),
-price double,
+price numeric(10,2),
 FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id));
 
 create table User
@@ -27,13 +27,22 @@ reviewer_id int REFERENCES User(id),
 restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
 rating int,
-created DATE);
+created DATE,
+updatedAt DATE);
 
 create table Wishlist
 (id int REFERENCES User(id),
 restaurant_id int,
 food varchar(100) REFERENCES Serves(food));
 
+create table ReviewArchive
+(review_id int PRIMARY KEY AUTO_INCREMENT,
+reviewer_id int REFERENCES User(id),
+restaurant_id int,
+food varchar(100) REFERENCES Serves(food),
+rating int,
+created DATE,
+updatedAt DATE);
 
 ### TRIGGERS
 

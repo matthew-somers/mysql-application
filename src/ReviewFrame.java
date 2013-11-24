@@ -118,7 +118,7 @@ public class ReviewFrame extends JFrame
         add(reviewList);
         
         // get the list of reviews that match the user id	    
-        updateTable("SELECT name as restaurant, food, rating, created as date " +
+        updateTable("SELECT name as restaurant, address, food, rating, created as date " +
 				  	"FROM Review NATURAL JOIN Restaurant " +
 				  	"WHERE reviewer_id = " + userid + " " +
         			"ORDER BY created DESC;");
@@ -164,7 +164,7 @@ public class ReviewFrame extends JFrame
 	
 	
 	/**
-	 * Updates the table with a new ranking category
+	 * Updates the table with a new review category
 	 * @param statement the SQL query to be executed
 	 * @throws SQLException
 	 */

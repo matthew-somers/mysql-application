@@ -126,6 +126,10 @@ public class WishlistAdd extends JFrame
 
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
+		        	WishlistFrame.updateTable("SELECT food, name " +
+				  	"FROM Wishlist NATURAL JOIN Restaurant " +
+				  	"WHERE id = " + userid + " " +
+	    			"");
 		        	dispose();
 	        	}
 	        	

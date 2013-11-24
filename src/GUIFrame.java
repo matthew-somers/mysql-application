@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -20,9 +22,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.table.DefaultTableModel;
 
 public class GUIFrame extends JFrame
 {
@@ -30,6 +34,7 @@ public class GUIFrame extends JFrame
     private static PreparedStatement preparedStatement = null;
     private static ResultSet resultSet = null;
     private static int userid;
+    JTable table;
     
 	public GUIFrame(Connection cn, final int userid)
 	{
@@ -40,7 +45,6 @@ public class GUIFrame extends JFrame
         setSize(new Dimension(600, 300));
         
         final JTextArea textarea = new JTextArea(10, 30);
-        textarea.setEditable(false);
         JScrollPane scroll = new JScrollPane(textarea);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -116,13 +120,8 @@ public class GUIFrame extends JFrame
 	            		ArrayList<String> list = new ArrayList<String>();
 	            		String food = (String) secondcriteria.getSelectedItem();
 	            		//name = name.replace("'", "\\'");
-	            		list = readDataBase("name, address, city, price", 1, 3, "food = '" + food + "'");
-	            		String restlist = "";
-	            		for (String element : list)
-	            		{
-	            			restlist += element + "\t\n";
-	            		}
-	            		textarea.setText(restlist);
+	            		updateTable("select name, address, city, price from Restaurant join Serves using(restaurant_id) where food = '" + food + "'");
+
             		}
             	}
             	catch(Exception e) {}
@@ -138,18 +137,20 @@ public class GUIFrame extends JFrame
             	{
             		if (firstcriteria.getSelectedIndex() == 2)
             			; // do nothing
+            		else if (secondcriteria.getSelectedIndex() == 0)
+            			;
+            		else if (thirdcriteria.getSelectedIndex() == 0)
+            			;
             		else
             		{
 	            		ArrayList<String> list = new ArrayList<String>();
 	            		String address = (String) thirdcriteria.getSelectedItem();
 	            		//name = name.replace("'", "\\'");
-	            		list = readDataBase("food, price", 1, 3, "address = '" + address + "'");
-	            		String restlist = "";
-	            		for (String element : list)
-	            		{
-	            			restlist += element + "\t\n";
-	            		}
-	            		textarea.setText(restlist);
+	          
+	            		String statement = ("select food, price from Restaurant join Serves using(restaurant_id) where address = '" + address + "'");
+	            		updateTable(statement);
+	            		GUIFrame.this.repaint();
+	            		GUIFrame.this.revalidate();
             		}
             	}
             	catch(Exception e) {}
@@ -157,30 +158,6 @@ public class GUIFrame extends JFrame
         });
         
         this.add(boxholder, BorderLayout.NORTH);
-        
-        /*
-        JButton searchbutton = new JButton("Search");
-        searchbutton.setPreferredSize(new Dimension(80, 30));
-        searchbutton.addActionListener(new ActionListener() 
-        {
-            @Override
-            public void actionPerformed(ActionEvent event) 
-            {
-            	try 
-            	{
-            		ArrayList<String> results = new ArrayList<String>();
-            		//results = readDataBase()
-        			String restlist = "";
-        			for (String result : results)
-        			{
-        				restlist += result + "\t\n";
-        			}
-        			textarea.setText(restlist);
-            	}
-            	catch(Exception e) {}
-            }
-        });
-        */
         
         JButton reviewbutton = new JButton("View Reviews");
         reviewbutton.setPreferredSize(new Dimension(150, 30));
@@ -227,15 +204,15 @@ public class GUIFrame extends JFrame
             	catch(Exception e) {}
             }
         });
-        
-        //this.add(searchbutton);
-        JPanel wishlists = new JPanel();
-        wishlists.add(wishlistbutton);
-        this.add(wishlistbutton, BorderLayout.EAST);
-        this.add(reviewbutton, BorderLayout.WEST);
-        this.add(rankingbutton, BorderLayout.CENTER);
-        this.add(scroll, BorderLayout.SOUTH);
 
+        table = new JTable();
+        JScrollPane pane = new JScrollPane(table);
+        this.add(pane, BorderLayout.EAST);
+        JPanel buttons = new JPanel();
+        buttons.add(wishlistbutton, BorderLayout.CENTER);
+        buttons.add(reviewbutton, BorderLayout.SOUTH);
+        buttons.add(rankingbutton, BorderLayout.NORTH);
+        this.add(buttons, BorderLayout.CENTER);
 
         //setResizable(false);
         setVisible(true);
@@ -306,5 +283,66 @@ public class GUIFrame extends JFrame
           }
 
          return toreturn;
+    }
+    
+    /**
+     * Builds a table model
+     * @author Paul Vargas on http://stackoverflow.com/questions/10620448/most-simple-code-to-populate-jtable-from-resultset
+     * @param rs the result set
+     * @return a table model with the data and column names
+     * @throws SQLException
+     */
+    public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException 
+    {
+        ResultSetMetaData metaData = rs.getMetaData();
+        Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+        
+        // names of columns
+        Vector<Object> columnNames = new Vector<Object>();
+        int columnCount = metaData.getColumnCount();
+        for (int column = 1; column <= columnCount; column++) {
+            columnNames.add(metaData.getColumnName(column));
+        }
+        
+        // data of the table
+        while (rs.next()) {
+            Vector<Object> vector = new Vector<Object>();
+            for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+                vector.add(rs.getString(columnIndex));
+            }
+            data.add(vector);
+        }
+
+        DefaultTableModel model;
+        System.out.println(data.size());
+        if (data.size() == 0)
+        {
+        	Vector<Object> vector = new Vector<Object>();
+        	vector.add("");
+        	data.add(vector);
+        	model = new DefaultTableModel(data, 1);
+        }
+        else
+        {
+	        model = new DefaultTableModel(data, columnNames);
+        }
+        return model;
+    }
+
+
+    /**
+     * Updates the table with a new ranking category
+     * @param statement the SQL query to be executed
+     * @throws SQLException
+     */
+    public void updateTable(String statement) throws SQLException
+    {
+    	System.out.println(statement);
+    	preparedStatement = connection.prepareStatement(statement);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        table.removeAll();
+        table.setModel(buildTableModel(resultSet));
+        GUIFrame.this.repaint();
+        GUIFrame.this.revalidate();
     }
 }

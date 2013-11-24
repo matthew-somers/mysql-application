@@ -8,6 +8,8 @@ import java.util.Calendar;
 import java.util.Vector;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 /*
@@ -22,10 +24,14 @@ public class WishlistFrame extends JFrame
 	private static final String FRAME_TITLE = "Dishaster! - Your Wishlist";
 	
 	// panel that will contain the table of reviews
-	final static JPanel reviewList = new JPanel();
+	static JPanel wishlist;
+	static Vector<Vector<Object>> data;
+	static JTable table;
 	
 	public WishlistFrame(final Connection connection, final int userid) throws SQLException
 	{
+		wishlist = new JPanel();
+		data = new Vector<Vector<Object>>();
 		this.connection = connection;
 		
 		// set the attributes of the frame
@@ -33,7 +39,50 @@ public class WishlistFrame extends JFrame
 	    setLayout(new FlowLayout(FlowLayout.CENTER));
 	    setSize(new Dimension(500, 500)); // (width, height)
 	    
-	    // button to INSERT a new review
+	    // button to DELETE a wishlist
+	    final JButton deleteButton = new JButton("Delete from Wishlist");
+	    deleteButton.setEnabled(false);
+	    deleteButton.setPreferredSize(new Dimension(150, 30));
+	    
+	    deleteButton.addActionListener(new ActionListener() 
+	    {
+	        @Override
+	        public void actionPerformed(ActionEvent event) 
+	        {
+	        	try 
+	        	{
+	        		int row = table.getSelectedRow();
+	        		if (row == -1)
+	        			return;
+        		
+	        		String restname = table.getModel().getValueAt(row, 1).toString();
+	        		restname = restname.replace("'", "\\'");
+	        		String statement = "select restaurant_id from Wishlist join Restaurant using(restaurant_id) where" + 
+	        				" id = " + userid + " AND name = '" + restname + "'";
+	        		System.out.println(statement);
+	        		preparedStatement = connection.prepareStatement(statement);
+	        		ResultSet resultSet = preparedStatement.executeQuery();
+	        		resultSet.next();
+	        		String restid = resultSet.getString(1);
+	        		String food = table.getModel().getValueAt(row, 0).toString();
+	        		statement = "delete from Wishlist where" + 
+	        				" id = " + userid + " AND restaurant_id = " + restid + 
+	        				" AND food = '" + food + "'";
+	        		System.out.println(statement);
+	        		preparedStatement = connection.prepareStatement(statement);
+	        		preparedStatement.executeUpdate();
+	        		
+		        	updateTable("SELECT food, name " +
+						  	"FROM Wishlist NATURAL JOIN Restaurant " +
+						  	"WHERE id = " + userid + " " +
+			    			"");
+
+	        	}
+	        	catch(Exception e) {}
+	        }
+	    });
+	    
+	    // button to INSERT a new wishlist item
 	    JButton insertButton = new JButton("Add to Wishlist");
 	    insertButton.setPreferredSize(new Dimension(150, 30));
 	    insertButton.addActionListener(new ActionListener() 
@@ -43,45 +92,15 @@ public class WishlistFrame extends JFrame
 	        {
 	        	try { new WishlistAdd(connection, userid); } // opens new frame
 	        	catch(Exception e) {}
+	        	deleteButton.setEnabled(true);
 	        }
 	    });
+	    
 	    add(insertButton); // add button to the frame
-	    
-	    
-	    // button to UPDATE a review
-	    JButton updateButton = new JButton("Update Wishlist");
-	    updateButton.setPreferredSize(new Dimension(150, 30));
-	    updateButton.addActionListener(new ActionListener() 
-	    {
-	        @Override
-	        public void actionPerformed(ActionEvent event) 
-	        {
-	        	try { new UpdateReviewFrame(connection, userid); } // opens new frame
-	        	catch(Exception e) {}
-	        }
-	    });
-	    add(updateButton); // add button to the frame
-	    
-	    
-	    // button to DELETE a review
-	    JButton deleteButton = new JButton("Delete from Wishlist");
-	    deleteButton.setPreferredSize(new Dimension(150, 30));
-	    deleteButton.addActionListener(new ActionListener() 
-	    {
-	        @Override
-	        public void actionPerformed(ActionEvent event) 
-	        {
-	        	try 
-	        	{
-	        		new DeleteWishlistFrame(connection, userid);
-	        	} // opens new frame
-	        	catch(Exception e) {}
-	        }
-	    });
 	    add(deleteButton); // add button to the frame
 	    
-	    // add list of reviews
-	    add(reviewList);
+	    // add wishlist
+	    add(wishlist);
 	    
 	    // get the list of reviews that match the user id	    
 	    updateTable("SELECT food, name " +
@@ -89,6 +108,15 @@ public class WishlistFrame extends JFrame
 				  	"WHERE id = " + userid + " " +
 	    			"");
 	    
+	    table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+	        public void valueChanged(ListSelectionEvent event) {
+	        	deleteButton.setEnabled(true);
+	        }
+	    });
+	    
+	    int row = table.getSelectedRow();
+	    System.out.println(table.getModel().getValueAt(0, 0));
+	    //System.out.println(((JTable) ((JScrollPane) wishlist.getComponent(0)).getComponent(0)).getModel().getValueAt(0, 0).toString());
 	    
 	    // other frame option statements
 	    setVisible(true);
@@ -117,7 +145,8 @@ public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLExceptio
     }
 
     // data of the table
-    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+    
+    data.clear();
     while (rs.next()) {
         Vector<Object> vector = new Vector<Object>();
         for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
@@ -125,8 +154,21 @@ public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLExceptio
         }
         data.add(vector);
     }
-
-    return new DefaultTableModel(data, columnNames);
+    
+    DefaultTableModel model;
+    if (data.size() == 0)
+    {
+    	Vector<Object> vector = new Vector<Object>();
+    	vector.add("Nothing on your wishlist yet");
+    	data.add(vector);
+    	model = new DefaultTableModel(data, 1);
+    }
+    else
+    {
+    	model = new DefaultTableModel(data, columnNames);
+    }
+    
+    return model;
 }
 
 
@@ -137,17 +179,16 @@ public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLExceptio
  */
 public static void updateTable(String statement) throws SQLException
 {
-	reviewList.removeAll(); // first clear the existing table
+	wishlist.removeAll(); // first clear the existing table
 	System.out.println(statement);
 	
 	preparedStatement = connection.prepareStatement(statement);
     ResultSet resultSet = preparedStatement.executeQuery();
-    JTable table = new JTable(buildTableModel(resultSet));
+    table = new JTable(buildTableModel(resultSet));
+    wishlist.add(new JScrollPane(table)); // add the new table to the panel
     
-    reviewList.add(new JScrollPane(table)); // add the new table to the panel
-    
-    reviewList.repaint();
-    reviewList.revalidate();
+    wishlist.repaint();
+    wishlist.revalidate();
 }
 	
 }

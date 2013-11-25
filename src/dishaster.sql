@@ -27,7 +27,6 @@ reviewer_id int REFERENCES User(id),
 restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
 rating int,
-created DATE,
 updatedAt DATE,
 UNIQUE `UniqueReview` (reviewer_id, restaurant_id, food));
 
@@ -43,7 +42,6 @@ reviewer_id int REFERENCES User(id),
 restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
 rating int,
-created DATE,
 updatedAt DATE);
 
 ### TRIGGERS
@@ -93,8 +91,8 @@ DROP PROCEDURE IF EXISTS UpdateArchive;
 DELIMITER |
 CREATE PROCEDURE UpdateArchive (cutoffdate DATE)
 BEGIN
-	DELETE FROM ReviewArchive WHERE created >= cutoffdate;
-	INSERT INTO ReviewArchive(SELECT * FROM Review WHERE created >= cutoffdate);
+	DELETE FROM ReviewArchive WHERE updatedAt >= cutoffdate;
+	INSERT INTO ReviewArchive(SELECT * FROM Review WHERE updatedAt >= cutoffdate);
 END |
 
 # Look up which stores sells a specific food

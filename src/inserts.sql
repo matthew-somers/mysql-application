@@ -37,15 +37,13 @@ insert into User(name, likes, type) values('Matthew', 'fast food', 'admin');
 insert into User(name, likes, type) values('Jeffrey', 'dessert', 'admin');
 insert into User(name, likes, type) values('Kevin', 'pizza', 'user');
 
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(1, 2, 'donuts', 4, '2013-10-21');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(2, 3, 'hamburger', 3, '2013-10-22');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(2, 8, 'mushroom pizza', 3, '2013-10-22');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(3, 8, 'mushroom pizza', 2, '2013-10-22');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(3, 6, 'pancakes', 2, '2013-10-05');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(3, 6, 'french toast', 3, '2013-10-05');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(3, 9, 'noodles', 1, '2013-10-10');
-insert into Review(reviewer_id, restaurant_id, food, rating, created) values(3, 10, 'strawberry cupcake', 5, '2013-10-18');
-
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(1, 2, 'donuts', 4, '2013-10-21');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(2, 3, 'hamburger', 3, '2013-10-22');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(3, 6, 'pancakes', 2, '2013-10-05');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(3, 6, 'french toast', 3, '2013-10-05');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(3, 9, 'noodles', 1, '2013-10-10');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(3, 10, 'strawberry cupcake', 5, '2013-10-18');
+insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) values(3, 10, 'strawberry cupcake', 5, '2013-10-22');
 
 insert into Wishlist values(3, 8, 'mushroom pizza');
 insert into Wishlist values(3, 10, 'chocolate cupcake');

@@ -47,6 +47,7 @@ public class ReviewFrame extends JFrame
 	// label for the amount of reviews made
 	final static JLabel reviewCount = new JLabel();
 	static ResultSet countResultSet = null;
+	int reviews;
 	
 	/**
 	 * Constructs the review frame.
@@ -71,7 +72,11 @@ public class ReviewFrame extends JFrame
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            	try { new InsertReviewFrame(connection, userid); } // opens new frame
+            	try {
+            		new InsertReviewFrame(connection, userid);
+            		reviews++;
+            		reviewCount.setText("Current amount of reviews made: " + reviews);
+            	} // opens new frame
             	catch(Exception e) {}
             	deleteButton.setEnabled(false);
             }
@@ -87,7 +92,8 @@ public class ReviewFrame extends JFrame
             @Override
             public void actionPerformed(ActionEvent event) 
             {
-            	try { new UpdateReviewFrame(connection, userid); } // opens new frame
+            	try { new UpdateReviewFrame(connection, userid);
+            	} // opens new frame
             	catch(Exception e) {}
             	deleteButton.setEnabled(false);
             }
@@ -132,6 +138,8 @@ public class ReviewFrame extends JFrame
 					  	    "WHERE reviewer_id = " + userid + " " +
 	        			    "ORDER BY created DESC;");
 		        	deleteButton.setEnabled(false);
+	            	reviews--;
+	            	reviewCount.setText("Current amount of reviews made: " + reviews);
 
 	        	}
 	        	catch(Exception e) {}
@@ -143,7 +151,8 @@ public class ReviewFrame extends JFrame
         preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM Review WHERE reviewer_id = " + userid + ";");
         countResultSet = preparedStatement.executeQuery();
         countResultSet.next();
-        reviewCount.setText("Current amount of reviews made: " + countResultSet.getString(1));
+        reviews = Integer.parseInt(countResultSet.getString(1));
+        reviewCount.setText("Current amount of reviews made: " + reviews);
         add(reviewCount);
         
         // add list of reviews

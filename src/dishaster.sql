@@ -88,6 +88,15 @@ DELIMITER ;
 
 ### Stored Procedures
 
+# Archive the review table
+DROP PROCEDURE IF EXISTS UpdateArchive;
+DELIMITER |
+CREATE PROCEDURE UpdateArchive (cutoffdate DATE)
+BEGIN
+	DELETE FROM ReviewArchive WHERE created >= cutoffdate;
+	INSERT INTO ReviewArchive(SELECT * FROM Review WHERE created >= cutoffdate);
+END |
+
 # Look up which stores sells a specific food
 DELIMITER //
 CREATE PROCEDURE foodLookUp

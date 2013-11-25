@@ -67,7 +67,7 @@ public class UpdateReviewFrame extends JFrame
             		name = name.replace("'", "\\'");
             		String where = "name = '" + name + "'";
             		
-            		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 5, where);
+            		ArrayList<String> addresses = GUIFrame.readDataBase("distinct address", 1, 5, where);
             		for (String address : addresses)
             			input2.addItem(address);
             		input2.setSelectedItem(null); 		

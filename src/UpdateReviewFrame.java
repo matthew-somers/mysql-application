@@ -158,6 +158,18 @@ public class UpdateReviewFrame extends JFrame
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");
 
+		        	// update the review archive
+		        	try
+		        	{    
+			        	CallableStatement cStmt = connection.prepareCall("{call UpdateArchive(?)}");
+			            cStmt.setString(1, dateFormat.format(cal.getTime()));
+			        	cStmt.execute();
+		        	}
+		        	catch(Exception e)
+		        	{
+		        		JOptionPane.showMessageDialog(saveButton,"Error archiving.");
+		        	}
+		        	
 		        	dispose();
 	        	}
 	        	

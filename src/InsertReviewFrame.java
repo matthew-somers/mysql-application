@@ -148,6 +148,18 @@ public class InsertReviewFrame extends JFrame
 									  	    "WHERE reviewer_id = " + userid + " " +
 					        			    "ORDER BY created DESC;");
 		        	
+		        	try
+		        	{
+			        	// update the review archive
+			        	CallableStatement cStmt = connection.prepareCall("{call UpdateArchive()}");
+			            //cStmt.setString(1, dateFormat.format(cal.getTime()));
+			        	cStmt.execute();
+		        	}
+		        	catch(Exception e)
+		        	{
+		        		JOptionPane.showMessageDialog(saveButton,"Error archiving.");
+		        	}
+		        	
 		        	dispose();
 	        	}
 	        	

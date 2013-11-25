@@ -127,10 +127,10 @@ public class ReviewFrame extends JFrame
 	        		preparedStatement = connection.prepareStatement(statement);
 	        		preparedStatement.executeUpdate();
 	        		
-		        	updateTable("SELECT food, name " +
-						  	"FROM Wishlist NATURAL JOIN Restaurant " +
-						  	"WHERE id = " + userid + " " +
-			    			"");
+	        		updateTable("SELECT name as restaurant, address, food, rating, created as date " +
+					  	    "FROM Review NATURAL JOIN Restaurant " +
+					  	    "WHERE reviewer_id = " + userid + " " +
+	        			    "ORDER BY created DESC;");
 		        	deleteButton.setEnabled(false);
 
 	        	}

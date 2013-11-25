@@ -255,7 +255,7 @@ public class GUIFrame extends JFrame
                 {
                 	try 
                 	{
-
+                		new AdminFrame(connection);
                 	}
                 	catch(Exception e) {}
                 }

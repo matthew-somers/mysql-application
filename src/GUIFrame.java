@@ -178,7 +178,7 @@ public class GUIFrame extends JFrame
 	            		type = type.replace("'", "\\'");
 	            		String city = (String) secondcriteria.getSelectedItem();
 	            		city = city.replace("'", "\\'");
-	            		String statement = ("select name, food, price from Restaurant join Serves using(restaurant_id) where type = '" + type + "'" +
+	            		String statement = ("select name, address, food, price from Restaurant join Serves using(restaurant_id) where type = '" + type + "'" +
 	            				"and city = '" + city + "'");
 	            		updateTable(statement);
 	            		GUIFrame.this.repaint();

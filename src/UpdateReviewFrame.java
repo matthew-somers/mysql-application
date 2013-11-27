@@ -1,7 +1,7 @@
 /**
  * A frame where a user can update a previous review
  * they've made.
- * 
+ *
  * Fall 2013, CS 157A, Group Project
  * @author Kevin Tan
  * @version 11/20/2013
@@ -20,31 +20,31 @@ public class UpdateReviewFrame extends JFrame
 {
 	private static Connection connection;
     private static PreparedStatement preparedStatement = null;
-    
-    JLabel label1, label2, label3, label4; 
+
+    JLabel label1, label2, label3, label4;
     JComboBox input1, input2, input3, input4;
     JButton saveButton, resetButton;
-    
+
     String[] ratingChoices = {"1 - Dishaster!", "2 - Poor", "3 - Meh", "4 - Good", "5 - Great" };
     String restid = "";
-    
+
 	public UpdateReviewFrame(Connection cn, final int userid)
 	{
 		connection = cn;
         setTitle("Dishaster! - Update Review");
         setLayout(new GridLayout(5,2));
         setSize(new Dimension(400, 250));
-        
+
         label1 = new JLabel(" Restaurant:");
         label2 = new JLabel(" Address:");
         label3 = new JLabel(" Dish:");
         label4 = new JLabel(" New Rating:");
-        
+
         // string for where statement
         String where = "reviewer_id = " + userid;
-        
+
 	  	ArrayList<String> names = new ArrayList<String>();
-		try { names = GUIFrame.readDataBase("distinct name", 1, 5, where); } 
+		try { names = GUIFrame.readDataBase("distinct name", 1, 5, where); }
 		catch (Exception e2) { e2.printStackTrace(); }
 
         input1 = new JComboBox(names.toArray());
@@ -52,13 +52,13 @@ public class UpdateReviewFrame extends JFrame
         input2 = new JComboBox();
         input3 = new JComboBox();
         input4 = new JComboBox();
-        
-        input1.addActionListener(new ActionListener() 
+
+        input1.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
-            	try 
+            	try
             	{
             		input2.removeAllItems();
             		input3.removeAllItems();
@@ -66,11 +66,11 @@ public class UpdateReviewFrame extends JFrame
             		String name = (String)input1.getSelectedItem();
             		name = name.replace("'", "\\'");
             		String where = "name = '" + name + "'";
-            		
+
             		ArrayList<String> addresses = GUIFrame.readDataBase("distinct address", 1, 5, where);
             		for (String address : addresses)
             			input2.addItem(address);
-            		input2.setSelectedItem(null); 		
+            		input2.setSelectedItem(null);
             		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 5, where);
             		for (String food : foods)
             			input3.addItem(food);
@@ -79,13 +79,13 @@ public class UpdateReviewFrame extends JFrame
             	catch(Exception e) {}
             }
         });
-        
-        input2.addActionListener(new ActionListener() 
+
+        input2.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
-            	try 
+            	try
             	{
             		String where = "address = '" + input2.getSelectedItem() + "'";
             		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
@@ -93,13 +93,13 @@ public class UpdateReviewFrame extends JFrame
             	catch(Exception e) {}
             }
         });
-        
+
         input4 = new JComboBox(ratingChoices);
         input4.setSelectedItem(null);
-        
+
         saveButton = new JButton("Update");
         resetButton = new JButton("Reset");
-        
+
         add(label1);
         add(input1);
         add(label2);
@@ -110,9 +110,9 @@ public class UpdateReviewFrame extends JFrame
         add(input4);
         add(saveButton);
         add(resetButton);
-        
+
         // resets all the fields
-        resetButton.addActionListener(new ActionListener() 
+        resetButton.addActionListener(new ActionListener()
         {
         	public void actionPerformed(ActionEvent ae)
         	{
@@ -122,9 +122,9 @@ public class UpdateReviewFrame extends JFrame
         		input4.setSelectedItem(null);
         	}
         });
-        
+
         // insert new review
-        saveButton.addActionListener(new ActionListener() 
+        saveButton.addActionListener(new ActionListener()
         {
         	public void actionPerformed(ActionEvent ae)
         	{
@@ -133,34 +133,34 @@ public class UpdateReviewFrame extends JFrame
 	        	String value3 = (String) input3.getSelectedItem();
 	        	String value4 = Integer.toString(input4.getSelectedIndex() + 1);
 	        	System.out.println(value1 + value2 + value3 + value4);
-	        	
+
 	        	try
 	        	{
 	        		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	        		Calendar cal = Calendar.getInstance();
-	        		
+
 	        		String statement = "UPDATE Review " +
 	        							"SET rating = " + (input4.getSelectedIndex() + 1) + ", " +
-	        								"created = '" + dateFormat.format(cal.getTime()) + "' " +
-	        							"WHERE reviewer_id = " + userid + " " + 
-	        							  "AND restaurant_id = " + restid + " " + 
+	        								"updatedAt = '" + dateFormat.format(cal.getTime()) + "' " +
+	        							"WHERE reviewer_id = " + userid + " " +
+	        							  "AND restaurant_id = " + restid + " " +
 	        							  "AND food = '" + input3.getSelectedItem() + "'";
 
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
-		        	
+
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully updated.");
-		        	
+
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, updatedAt as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
-					        			    "ORDER BY created DESC;");
+					        			    "ORDER BY updatedAt DESC;");
 
 		        	// update the review archive
 		        	try
-		        	{    
+		        	{
 			        	CallableStatement cStmt = connection.prepareCall("{call UpdateArchive(?)}");
 			            cStmt.setString(1, dateFormat.format(cal.getTime()));
 			        	cStmt.execute();
@@ -169,17 +169,17 @@ public class UpdateReviewFrame extends JFrame
 		        	{
 		        		JOptionPane.showMessageDialog(saveButton,"Error archiving.");
 		        	}
-		        	
+
 		        	dispose();
 	        	}
-	        	
+
 	        	catch(Exception e)
 	        	{
 	        		JOptionPane.showMessageDialog(saveButton,"Error!");
 	        	}
         	}
         });
-    
+
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}

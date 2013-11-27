@@ -15,26 +15,26 @@ public class InsertReviewFrame extends JFrame
 {
 	private static Connection connection;
     private static PreparedStatement preparedStatement = null;
-    
-    JLabel label1, label2, label3, label4; 
+
+    JLabel label1, label2, label3, label4;
     JComboBox input1, input2, input3, input4;
     JButton saveButton, resetButton;
-    
+
     String[] ratingChoices = {"1 - Dishaster!", "2 - Poor", "3 - Meh", "4 - Good", "5 - Great" };
     String restid = "";
-    
+
 	public InsertReviewFrame(Connection cn, final int userid)
 	{
 		connection = cn;
         setTitle("Dishaster! - New Review");
         setLayout(new GridLayout(5,2));
         setSize(new Dimension(400, 250));
-        
+
         label1 = new JLabel(" Restaurant:");
         label2 = new JLabel(" Address:");
         label3 = new JLabel(" Dish:");
         label4 = new JLabel(" Rating:");
-        
+
 	  	ArrayList<String> names = new ArrayList<String>();
 		try {
 			names = GUIFrame.readDataBase("distinct name", 1, 1, "");
@@ -47,13 +47,13 @@ public class InsertReviewFrame extends JFrame
         input2 = new JComboBox();
         input3 = new JComboBox();
         input4 = new JComboBox();
-        
-        input1.addActionListener(new ActionListener() 
+
+        input1.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
-            	try 
+            	try
             	{
             		input2.removeAllItems();
             		input3.removeAllItems();
@@ -61,11 +61,11 @@ public class InsertReviewFrame extends JFrame
             		String name = (String)input1.getSelectedItem();
             		name = name.replace("'", "\\'");
             		String where = "name = '" + name + "'";
-            		
+
             		ArrayList<String> addresses = GUIFrame.readDataBase("address", 1, 1, where);
             		for (String address : addresses)
             			input2.addItem(address);
-            		input2.setSelectedItem(null); 		
+            		input2.setSelectedItem(null);
             		ArrayList<String> foods = GUIFrame.readDataBase("distinct food", 1, 3, where);
             		for (String food : foods)
             			input3.addItem(food);
@@ -74,13 +74,13 @@ public class InsertReviewFrame extends JFrame
             	catch(Exception e) {}
             }
         });
-        
-        input2.addActionListener(new ActionListener() 
+
+        input2.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
-            	try 
+            	try
             	{
             		String where = "address = '" + input2.getSelectedItem() + "'";
             		restid = GUIFrame.readDataBase("restaurant_id", 1, 1, where).get(0);
@@ -88,14 +88,14 @@ public class InsertReviewFrame extends JFrame
             	catch(Exception e) {}
             }
         });
-        
+
         input4 = new JComboBox(ratingChoices);
         input4.setSelectedItem(null);
-        
+
         saveButton = new JButton("Add");
         resetButton = new JButton("Reset");
-        
-        
+
+
         add(label1);
         add(input1);
         add(label2);
@@ -106,9 +106,9 @@ public class InsertReviewFrame extends JFrame
         add(input4);
         add(saveButton);
         add(resetButton);
-        
+
         // resets all the fields
-        resetButton.addActionListener(new ActionListener() 
+        resetButton.addActionListener(new ActionListener()
         {
         	public void actionPerformed(ActionEvent ae)
         	{
@@ -118,9 +118,9 @@ public class InsertReviewFrame extends JFrame
         		input4.setSelectedItem(null);
         	}
         });
-        
+
         // insert new review
-        saveButton.addActionListener(new ActionListener() 
+        saveButton.addActionListener(new ActionListener()
         {
         	public void actionPerformed(ActionEvent ae)
         	{
@@ -129,28 +129,28 @@ public class InsertReviewFrame extends JFrame
 	        	String value3 = (String) input3.getSelectedItem();
 	        	String value4 = Integer.toString(input4.getSelectedIndex() + 1);
 	        	System.out.println(value1 + value2 + value3 + value4);
-	        	
+
 	        	try
 	        	{
 	        		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	        		Calendar cal = Calendar.getInstance();
-	        		String statement = "insert into Review(reviewer_id, restaurant_id, food, rating, created) " + 
+	        		String statement = "insert into Review(reviewer_id, restaurant_id, food, rating, updatedAt) " +
 	        				"values(" + userid + ", " + restid + ", '" + input3.getSelectedItem() + "', " + (input4.getSelectedIndex()+1) + ", '" + dateFormat.format(cal.getTime()) + "')";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
-		        	
+
 	        		preparedStatement.executeUpdate();
 		        	JOptionPane.showMessageDialog(saveButton, "Successfully added.");
-		        	
+
 		        	// update the review frame table
-		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, created as date " +
+		        	ReviewFrame.updateTable("SELECT name as restaurant, address, food, rating, updatedAt as date " +
 									  	    "FROM Review NATURAL JOIN Restaurant " +
 									  	    "WHERE reviewer_id = " + userid + " " +
-					        			    "ORDER BY created DESC;");
-		        	
+					        			    "ORDER BY updatedAt DESC;");
+
 		        	// update the review archive
 		        	try
-		        	{    
+		        	{
 			        	CallableStatement cStmt = connection.prepareCall("{call UpdateArchive(?)}");
 			            cStmt.setString(1, dateFormat.format(cal.getTime()));
 			        	cStmt.execute();
@@ -159,17 +159,17 @@ public class InsertReviewFrame extends JFrame
 		        	{
 		        		JOptionPane.showMessageDialog(saveButton,"Error archiving.");
 		        	}
-		        	
+
 		        	dispose();
 	        	}
-	        	
+
 	        	catch(Exception e)
 	        	{
 	        		JOptionPane.showMessageDialog(saveButton,"You have made this review already. If you wish to change the rating, select 'Update Review'.");
 	        	}
         	}
         });
-    
+
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}

@@ -2,7 +2,7 @@
  * A frame that allows the user to view the current reviews
  * that he/she has made. Also in this frame the user has the
  * ability to insert, update, and delete reviews.
- * 
+ *
  * Fall 2013, CS 157A, Group Project
  * @author Kevin Tan
  * @version 11/20/2013
@@ -35,20 +35,20 @@ public class ReviewFrame extends JFrame
 {
 	private static Connection connection;
 	private static PreparedStatement preparedStatement = null;
-	
+
 	// title of the frame
 	private static final String FRAME_TITLE = "Dishaster! - Reviews";
-	
+
 	// panel that will contain the table of reviews
 	final static JPanel reviewList = new JPanel();
 	static JTable table;
 	static JButton deleteButton;
-	
+
 	// label for the amount of reviews made
 	final static JLabel reviewCount = new JLabel();
 	static ResultSet countResultSet = null;
 	int reviews;
-	
+
 	/**
 	 * Constructs the review frame.
 	 * @param connection the connection to database
@@ -58,19 +58,19 @@ public class ReviewFrame extends JFrame
 	public ReviewFrame(final Connection connection, final int userid) throws SQLException
 	{
 		ReviewFrame.connection = connection;
-		
+
 		// set the attributes of the frame
         setTitle(FRAME_TITLE);
         setLayout(new FlowLayout(FlowLayout.CENTER));
         setSize(new Dimension(500, 500)); // (width, height)
-        
+
         // button to INSERT a new review
         JButton insertButton = new JButton("New Review");
         insertButton.setPreferredSize(new Dimension(150, 30));
-        insertButton.addActionListener(new ActionListener() 
+        insertButton.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
             	try {
             		new InsertReviewFrame(connection, userid);
@@ -82,15 +82,15 @@ public class ReviewFrame extends JFrame
             }
         });
         add(insertButton); // add button to the frame
-        
-        
+
+
         // button to UPDATE a review
         JButton updateButton = new JButton("Update Review");
         updateButton.setPreferredSize(new Dimension(150, 30));
-        updateButton.addActionListener(new ActionListener() 
+        updateButton.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
             	try { new UpdateReviewFrame(connection, userid);
             	} // opens new frame
@@ -99,26 +99,26 @@ public class ReviewFrame extends JFrame
             }
         });
         add(updateButton); // add button to the frame
-        
-        
+
+
         // button to refresh the list of reviews
         deleteButton = new JButton("Delete Review");
         deleteButton.setEnabled(false);
         deleteButton.setPreferredSize(new Dimension(150, 30));
-        deleteButton.addActionListener(new ActionListener() 
+        deleteButton.addActionListener(new ActionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent event) 
+            public void actionPerformed(ActionEvent event)
             {
-	        	try 
+	        	try
 	        	{
 	        		int row = table.getSelectedRow();
 	        		if (row == -1)
 	        			return;
-        		
+
 	        		String restaddr = table.getModel().getValueAt(row, 1).toString();
 	        		restaddr = restaddr.replace("'", "\\'");
-	        		String statement = "select restaurant_id from Review join Restaurant using(restaurant_id) where" + 
+	        		String statement = "select restaurant_id from Review join Restaurant using(restaurant_id) where" +
 	        				" reviewer_id = " + userid + " AND address = '" + restaddr + "'";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
@@ -126,17 +126,17 @@ public class ReviewFrame extends JFrame
 	        		resultSet.next();
 	        		String restid = resultSet.getString(1);
 	        		String food = table.getModel().getValueAt(row, 2).toString();
-	        		statement = "delete from Review where" + 
-	        				" reviewer_id = " + userid + " AND restaurant_id = " + restid + 
+	        		statement = "delete from Review where" +
+	        				" reviewer_id = " + userid + " AND restaurant_id = " + restid +
 	        				" AND food = '" + food + "'";
 	        		System.out.println(statement);
 	        		preparedStatement = connection.prepareStatement(statement);
 	        		preparedStatement.executeUpdate();
-	        		
-	        		updateTable("SELECT name as restaurant, address, food, rating, created as date " +
+
+	        		updateTable("SELECT name as restaurant, address, food, rating, updatedAt as date " +
 					  	    "FROM Review NATURAL JOIN Restaurant " +
 					  	    "WHERE reviewer_id = " + userid + " " +
-	        			    "ORDER BY created DESC;");
+	        			    "ORDER BY updatedAt DESC;");
 		        	deleteButton.setEnabled(false);
 	            	reviews--;
 	            	reviewCount.setText("Current amount of reviews made: " + reviews);
@@ -146,7 +146,7 @@ public class ReviewFrame extends JFrame
 	        }
         });
         add(deleteButton); // add button to the frame
-        
+
         // label for the amount of reviews made
         preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM Review WHERE reviewer_id = " + userid + ";");
         countResultSet = preparedStatement.executeQuery();
@@ -154,24 +154,24 @@ public class ReviewFrame extends JFrame
         reviews = Integer.parseInt(countResultSet.getString(1));
         reviewCount.setText("Current amount of reviews made: " + reviews);
         add(reviewCount);
-        
+
         // add list of reviews
         add(reviewList);
-        
-        // get the list of reviews that match the user id	    
-        updateTable("SELECT name as restaurant, address, food, rating, created as date " +
+
+        // get the list of reviews that match the user id
+        updateTable("SELECT name as restaurant, address, food, rating, updatedAt as date " +
 				  	"FROM Review NATURAL JOIN Restaurant " +
 				  	"WHERE reviewer_id = " + userid + " " +
-        			"ORDER BY created DESC;");
-        
-        
+        			"ORDER BY updatedAt DESC;");
+
+
         // other frame option statements
         setVisible(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        
+
 	} // end ReviewFrame constructor
-	
-	
+
+
 	/**
 	 * Builds a table model
 	 * @author Paul Vargas on http://stackoverflow.com/questions/10620448/most-simple-code-to-populate-jtable-from-resultset
@@ -179,7 +179,7 @@ public class ReviewFrame extends JFrame
 	 * @return a table model with the data and column names
 	 * @throws SQLException
 	 */
-	public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException 
+	public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException
 	{
         ResultSetMetaData metaData = rs.getMetaData();
 
@@ -202,8 +202,8 @@ public class ReviewFrame extends JFrame
 
         return new DefaultTableModel(data, columnNames);
     }
-	
-	
+
+
 	/**
 	 * Updates the table with a new review category
 	 * @param statement the SQL query to be executed
@@ -212,7 +212,7 @@ public class ReviewFrame extends JFrame
 	public static void updateTable(String statement) throws SQLException
 	{
 		reviewList.removeAll(); // first clear the existing table
-		
+
 		preparedStatement = connection.prepareStatement(statement);
         ResultSet resultSet = preparedStatement.executeQuery();
 	    table = new JTable(buildTableModel(resultSet));
@@ -222,7 +222,7 @@ public class ReviewFrame extends JFrame
 	        }
 	    });
 	    reviewList.add(new JScrollPane(table)); // add the new table to the panel
-	    
+
 	    reviewList.repaint();
 	    reviewList.revalidate();
 	}

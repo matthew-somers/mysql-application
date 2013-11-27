@@ -1,4 +1,4 @@
-drop database dishaster; #comment this out as needed
+#drop database dishaster; #comment this out as needed
 create database dishaster;
 use dishaster;
 
@@ -43,6 +43,7 @@ restaurant_id int,
 food varchar(100) REFERENCES Serves(food),
 rating int,
 updatedAt DATE);
+
 
 ### TRIGGERS
 
@@ -94,39 +95,4 @@ BEGIN
 	DELETE FROM ReviewArchive WHERE updatedAt >= cutoffdate;
 	INSERT INTO ReviewArchive(SELECT * FROM Review WHERE updatedAt >= cutoffdate);
 END |
-
-# Look up which stores sells a specific food
-DELIMITER //
-CREATE PROCEDURE foodLookUp
-(IN foodToLook VARCHAR(50), OUT storeName VARCHAR(50))
-BEGIN
-SELECT name INTO storeName
-FROM Restaurant join Serves using(restaurant_id)
-WHERE food = foodToLook;
-END //
-DELIMITER ;
-
-# Find which stores sell a specific food the cheapest
-DELIMITER //
-CREATE PROCEDURE cheapFoodLookUp
-(IN foodToLook VARCHAR(50), OUT storeName VARCHAR(50))
-BEGIN
-SELECT name INTO storeName
-FROM Restaurant join Serves using(restaurant_id)
-WHERE food = foodToLook
-AND price IN (SELECT min(price)
-FROM serves
-WHERE food = foodToLook);
-END //
-DELIMITER ;
-
-# Find a type of restaurant in a city
-DELIMITER //
-CREATE PROCEDURE typeLookUp
-(IN typeToLook VARCHAR(50), IN cityToLook VARCHAR(50), OUT storeName VARCHAR(50))
-BEGIN
-SELECT name INTO storeName
-FROM Restaurant
-WHERE type = typeToLook AND city = cityToLook;
-END //
 DELIMITER ;
